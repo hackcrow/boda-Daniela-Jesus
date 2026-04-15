@@ -24,14 +24,10 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true });
   }
 
-}
-
-if (url) {
-  const exists = await redis.lrange(KEY, 0, -1);
-
-  if (!exists.includes(url)) {
-    await redis.lpush(KEY, url);
+  // 👇 NUEVO
+  if (req.method === "DELETE") {
+    await redis.del(KEY);
+    return res.status(200).json({ success: true });
   }
-}
 
-await redis.ltrim(KEY, 0, 199); // máximo 200 fotos
+}
