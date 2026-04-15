@@ -1,4 +1,31 @@
 const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
+const cloudName = "dazidfv1m";
+const uploadPreset = "fiesta-mia";
+const folder = "bodaDanielaJesus";
+
+function openWidget() {
+  cloudinary.openUploadWidget({
+    cloudName: cloudName,
+    uploadPreset: uploadPreset,
+    folder: folder,
+    sources: ["local", "camera"],
+    multiple: true
+  },
+  async (error, result) => {
+    if (!error && result && result.event === "success") {
+
+      const url = result.info.secure_url;
+
+      // 🔥 Mostrar en pantalla
+      const img = document.createElement("img");
+      img.src = url;
+      document.getElementById("gallery").prepend(img);
+
+      // 🔥 Guardar en Upstash
+      await saveImage(url);
+    }
+  });
+}
 
 async function saveImage(url) {
   try {
