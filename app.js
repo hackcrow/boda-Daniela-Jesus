@@ -55,3 +55,29 @@ setInterval(loadLocalImages, 3000);
 
 // 🔥 INICIO
 loadLocalImages();
+
+async function loadImages() {
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+      headers: {
+        "X-Master-Key": API_KEY
+      }
+    });
+
+    const data = await res.json();
+
+    const gallery = document.getElementById("gallery");
+    gallery.innerHTML = "";
+
+    data.record.imagenes.forEach(url => {
+      const img = document.createElement("img");
+      img.src = url;
+      gallery.appendChild(img);
+    });
+
+  } catch (error) {
+    console.log("Error cargando imágenes:", error);
+  }
+}
+
+loadImages();
