@@ -11,23 +11,23 @@ function openWidget() {
     uploadPreset,
     folder,
     sources: ["local", "camera"],
-    multiple: false
+    multiple: true
   },
   async (error, result) => {
+
     if (!error && result && result.event === "success") {
 
       const url = result.info.secure_url;
 
       console.log("Subida:", url);
 
-      // 🔥 mostrar instantáneamente
       addImage(url);
-
-      // 🔥 guardar en backend
       await saveImage(url);
+    }
 
-      // 🔥 sincronizar con todos
-      await loadImages();
+    // 🔥 cuando termina todo el batch
+    if (result.event === "queues-end") {
+      await loadImages(); // sincroniza todo
     }
   });
 }
@@ -50,7 +50,7 @@ async function saveImage(url) {
 // 📥 CARGAR TODAS
 async function loadImages() {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL + "?t=" + Date.now()); // 🚫 evita caché
     const data = await res.json();
 
     const gallery = document.getElementById("gallery");
@@ -88,4 +88,4 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // 🔄 AUTO REFRESH (feed en vivo)
-setInterval(loadImages, 4000);
+setInterval(loadImages, 2000);
