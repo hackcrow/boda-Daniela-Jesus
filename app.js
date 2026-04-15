@@ -1,9 +1,22 @@
-
-const cloudName = "TU_CLOUD_NAME";
-const folder = "TU_FOLDER";
+<script>
+const cloudName = "dazidfv1m";
+const uploadPreset = "fiesta-mia"; 
+const folder = "bodaDanielaJesus";
 
 let loadedImages = new Set();
 
+// BOTÓN SUBIR
+function openWidget() {
+  cloudinary.openUploadWidget({
+    cloudName: cloudName,
+    uploadPreset: uploadPreset,
+    folder: folder,
+    sources: ["local", "camera"],
+    multiple: true
+  });
+}
+
+// FEED EN VIVO
 async function loadImages() {
   try {
     const url = `https://res.cloudinary.com/${cloudName}/image/list/${folder}.json`;
@@ -11,22 +24,14 @@ async function loadImages() {
     const res = await fetch(url);
     const data = await res.json();
 
-    // Ordenar por fecha (más nuevas primero)
     const images = data.resources.sort((a, b) => b.created_at.localeCompare(a.created_at));
 
     images.forEach(img => {
       if (!loadedImages.has(img.public_id)) {
-
         loadedImages.add(img.public_id);
 
         const image = document.createElement("img");
         image.src = `https://res.cloudinary.com/${cloudName}/image/upload/${img.public_id}.jpg`;
-
-        image.style.opacity = 0;
-        image.onload = () => {
-          image.style.transition = "0.5s";
-          image.style.opacity = 1;
-        };
 
         document.getElementById("gallery").prepend(image);
       }
@@ -37,8 +42,9 @@ async function loadImages() {
   }
 }
 
-// 🔄 Cargar cada 5 segundos
+// refresca cada 5 seg
 setInterval(loadImages, 5000);
 
-// 🚀 Primera carga inmediata
+// primera carga
 loadImages();
+</script>
