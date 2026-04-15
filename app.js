@@ -65,45 +65,44 @@ async function loadImages() {
 }
 
 // 💾 GUARDAR EN JSONBIN
-async function saveImage(url) {
-  if (isSaving) return; // evita choques
-  isSaving = true;
+function saveImage(url) {
+  saveQueue = saveQueue.then(async () => {
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        headers: {
+          "X-Master-Key": API_KEY
+        }
+      });
 
-  try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-      headers: {
-        "X-Master-Key": API_KEY
+      const data = await res.json();
+
+      let images = [];
+
+      if (data.record && Array.isArray(data.record.imagenes)) {
+        images = data.record.imagenes;
       }
-    });
 
-    const data = await res.json();
+      if (!images.includes(url)) {
+        images.unshift(url);
+      }
 
-    let images = [];
+      await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Master-Key": API_KEY
+        },
+        body: JSON.stringify({
+          imagenes: images
+        })
+      });
 
-    if (data.record && Array.isArray(data.record.imagenes)) {
-      images = data.record.imagenes;
+      console.log("Guardado:", url);
+
+    } catch (error) {
+      console.log("Error guardando:", error);
     }
-
-    if (!images.includes(url)) {
-      images.unshift(url);
-    }
-
-    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": API_KEY
-      },
-      body: JSON.stringify({
-        imagenes: images
-      })
-    });
-
-  } catch (error) {
-    console.log("Error guardando:", error);
-  }
-
-  isSaving = false;
+  });
 }
 
 // 🚀 AUTO REFRESH (simula tiempo real)
