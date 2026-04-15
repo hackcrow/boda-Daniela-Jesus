@@ -33,11 +33,14 @@ function openWidget() {
 function addImage(url) {
   if (loadedImages.has(url)) return;
 
-  loadedImages.add(url);
-
   const img = document.createElement("img");
   img.src = url;
 
+  img.onerror = () => {
+    console.log("Imagen eliminada:", url);
+  };
+
+  loadedImages.add(url);
   document.getElementById("gallery").prepend(img);
 }
 
