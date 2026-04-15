@@ -66,6 +66,8 @@ async function loadImages() {
 
     const data = await res.json();
 
+    console.log("DATA:", data); // 👈 AGREGA ESTO
+
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
