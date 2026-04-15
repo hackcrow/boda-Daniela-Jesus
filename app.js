@@ -77,6 +77,10 @@ async function clearGallery() {
   document.getElementById("gallery").innerHTML = "";
 }
 
-document.getElementById("uploadBtn").addEventListener("click", openWidget);
+document.addEventListener("DOMContentLoaded", () => {
+  loadImages();
+
+  document.getElementById("uploadBtn").addEventListener("click", openWidget);
+});
 
 window.openWidget = openWidget;
