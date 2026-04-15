@@ -49,3 +49,5 @@ async function clearGallery() {
 
   document.getElementById("gallery").innerHTML = "";
 }
+
+window.openWidget = openWidget;
