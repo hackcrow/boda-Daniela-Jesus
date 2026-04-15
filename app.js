@@ -1,6 +1,8 @@
 const cloudName = "dazidfv1m";
 const uploadPreset = "fiesta-mia"; 
 const tag = "bodaDanielaJesus";
+const BIN_ID = "69dfc51b856a68218939a661";
+const API_KEY = "$2a$10$eT1ZGxw9WFErBX5VhYLGnutB4dsjwHnTABwA.p76iLx90hDMW9bSO";
 
 let loadedImages = new Set();
 
@@ -11,13 +13,23 @@ function openWidget() {
     uploadPreset: uploadPreset,
     sources: ["local", "camera"],
     multiple: true,
-    tags: [tag] // 🔥 IMPORTANTE
+    tags: [tag]
   },
   (error, result) => {
     if (!error && result && result.event === "success") {
-      addImage(result.info.secure_url);
+      const url = result.info.secure_url;
+
+      addImage(url);
+      saveImage(url);
     }
   });
+}
+
+// 💾 GUARDAR EN LOCAL STORAGE (fallback)
+function saveImage(url) {
+  let images = JSON.parse(localStorage.getItem("fiestaImages")) || [];
+  images.unshift(url);
+  localStorage.setItem("fiestaImages", JSON.stringify(images));
 }
 
 // 🔥 AGREGAR IMAGEN
@@ -32,24 +44,14 @@ function addImage(url) {
   document.getElementById("gallery").prepend(img);
 }
 
-// 🔄 CARGAR DESDE CLOUDINARY
-async function loadImages() {
-  try {
-    const res = await fetch(`https://res.cloudinary.com/${cloudName}/image/list/${tag}.json`);
-    const data = await res.json();
-
-    data.resources.forEach(img => {
-      const url = `https://res.cloudinary.com/${cloudName}/image/upload/${img.public_id}.jpg`;
-      addImage(url);
-    });
-
-  } catch (e) {
-    console.log("Error cargando imágenes:", e);
-  }
+// 🔄 CARGAR DESDE LOCAL (para persistencia)
+function loadLocalImages() {
+  const images = JSON.parse(localStorage.getItem("fiestaImages")) || [];
+  images.forEach(url => addImage(url));
 }
 
-// 🚀 AUTO REFRESH (cada 5 segundos)
-setInterval(loadImages, 5000);
+// 🚀 AUTO REFRESH SIMULADO
+setInterval(loadLocalImages, 3000);
 
-// 🔥 CARGA INICIAL
-loadImages();
+// 🔥 INICIO
+loadLocalImages();
