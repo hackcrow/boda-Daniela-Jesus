@@ -1,58 +1,28 @@
 const cloudName = "dazidfv1m";
 const uploadPreset = "fiesta-mia"; 
 
-const BIN_ID = "69dfc51b856a68218939a661";
-const API_KEY = "$2a$10$eT1ZGxw9WFErBX5VhYLGnutB4dsjwHnTABwA.p76iLx90hDMW9bSO";
-
-let loadedImages = new Set();
-
-let isSaving = false;
-
-let globalImages = [];
-
 // 📸 SUBIR FOTO
 function openWidget() {
-  let uploadedImages = [];
-
   cloudinary.openUploadWidget({
     cloudName: cloudName,
     uploadPreset: uploadPreset,
     sources: ["local", "camera"],
     multiple: true
   },
-  (error, result) => {
+  async (error, result) => {
 
-    if (!error && result) {
+    if (!error && result && result.event === "success") {
+      const url = result.info.secure_url;
 
-      if (result.event === "success") {
-        uploadedImages.push(result.info.secure_url);
-      }
-
-      if (result.event === "queues-end") {
-
-        // 🔥 agregar todas al estado local
-        uploadedImages.forEach(url => {
-          if (!globalImages.includes(url)) {
-            globalImages.unshift(url);
-          }
-        });
-
-        renderImages();
-
-        // 🔥 guardar TODO junto (una sola vez)
-        saveAllImages();
-
-        uploadedImages = [];
-      }
-
+      addImage(url);     // se ve inmediato
+      await saveImage(url); // se guarda en Vercel
     }
+
   });
 }
 
 // 🔥 AGREGAR IMAGEN AL DOM
 function addImage(url) {
-  if (loadedImages.has(url)) return;
-
   const img = document.createElement("img");
   img.src = url;
 
@@ -60,107 +30,46 @@ function addImage(url) {
     console.log("Imagen eliminada:", url);
   };
 
-  loadedImages.add(url);
   document.getElementById("gallery").prepend(img);
 }
 
-// 🔄 CARGAR IMÁGENES DESDE JSONBIN
+// 💾 GUARDAR EN VERCEL API
+async function saveImage(url) {
+  try {
+    await fetch("/api/images", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ url })
+    });
+  } catch (error) {
+    console.log("Error guardando:", error);
+  }
+}
+
+// 🔄 CARGAR IMÁGENES DESDE API
 async function loadImages() {
   try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-      headers: {
-        "X-Master-Key": API_KEY
-      }
-    });
-
+    const res = await fetch("/api/images");
     const data = await res.json();
 
-    if (data.record && Array.isArray(data.record.imagenes)) {
-      globalImages = data.record.imagenes;
-    }
+    const gallery = document.getElementById("gallery");
+    gallery.innerHTML = "";
 
-    renderImages();
+    data.forEach(url => {
+      const img = document.createElement("img");
+      img.src = url;
+      gallery.appendChild(img);
+    });
 
   } catch (error) {
     console.log("Error cargando imágenes:", error);
   }
 }
 
-// 💾 GUARDAR EN JSONBIN
-async function saveAllImages() {
-  try {
-    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": API_KEY
-      },
-      body: JSON.stringify({
-        imagenes: globalImages
-      })
-    });
-
-    console.log("Guardado completo:", globalImages.length);
-
-  } catch (error) {
-    console.log("Error guardando:", error);
-  }
-}
-
-async function saveMultipleImages(newUrls) {
-  try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-      headers: {
-        "X-Master-Key": API_KEY
-      }
-    });
-
-    const data = await res.json();
-
-    let images = [];
-
-    if (data.record && Array.isArray(data.record.imagenes)) {
-      images = data.record.imagenes;
-    }
-
-    // 🔥 agregar todas juntas
-    newUrls.forEach(url => {
-      if (!images.includes(url)) {
-        images.unshift(url);
-      }
-    });
-
-    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": API_KEY
-      },
-      body: JSON.stringify({
-        imagenes: images
-      })
-    });
-
-    console.log("Guardadas todas:", newUrls.length);
-
-  } catch (error) {
-    console.log("Error guardando múltiples:", error);
-  }
-}
-
-function renderImages() {
-  const gallery = document.getElementById("gallery");
-  gallery.innerHTML = "";
-
-  globalImages.forEach(url => {
-    const img = document.createElement("img");
-    img.src = url;
-    gallery.appendChild(img);
-  });
-}
-
-// 🚀 AUTO REFRESH (simula tiempo real)
-setInterval(loadImages, 5000);
+// 🚀 AUTO REFRESH (cada 3 segundos)
+setInterval(loadImages, 3000);
 
 // 🔥 CARGA INICIAL
 loadImages();
