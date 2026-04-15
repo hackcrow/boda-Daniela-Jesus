@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sube tus fotos 📸</title>
+  <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+</head>
+<body style="text-align:center; font-family:sans-serif;">
+
+  <h1>📸 Sube tus fotos de la fiesta</h1>
+  <button onclick="openWidget()">Subir foto</button>
+
+  <div id="gallery"></div>
+
+<script>
+function openWidget() {
+  cloudinary.openUploadWidget({
+    cloudName: "dazidfv1m",
+    uploadPreset: "fiesta-mia",
+    sources: ["local", "camera"],
+    multiple: true
+  },
+  (error, result) => {
+    if (!error && result && result.event === "success") {
+      const img = document.createElement("img");
+      img.src = result.info.secure_url;
+      img.style.width = "200px";
+      document.getElementById("gallery").appendChild(img);
+    }
+  });
+}
+</script>
+
+</body>
+</html>
