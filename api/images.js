@@ -8,26 +8,37 @@ const redis = new Redis({
 const KEY = "images";
 
 export default async function handler(req, res) {
+  try {
 
-  if (req.method === "GET") {
-    const images = await redis.lrange(KEY, 0, -1);
-    return res.status(200).json(images || []);
-  }
-
-  if (req.method === "POST") {
-    const { url } = req.body;
-
-    if (url) {
-      await redis.lpush(KEY, url);
+    // 📥 GET (obtener todas)
+    if (req.method === "GET") {
+      const images = await redis.lrange(KEY, 0, -1);
+      return res.status(200).json(images || []);
     }
 
-    return res.status(200).json({ success: true });
-  }
+    // 📤 POST (guardar)
+    if (req.method === "POST") {
+      const { url } = req.body;
 
-  // 👇 NUEVO
-  if (req.method === "DELETE") {
-    await redis.del(KEY);
-    return res.status(200).json({ success: true });
-  }
+      if (!url) {
+        return res.status(400).json({ error: "No URL" });
+      }
 
+      await redis.lpush(KEY, url);
+
+      return res.status(200).json({ success: true });
+    }
+
+    // 🗑️ DELETE (borrar todo)
+    if (req.method === "DELETE") {
+      await redis.del(KEY);
+      return res.status(200).json({ success: true });
+    }
+
+    return res.status(405).end();
+
+  } catch (error) {
+    console.error("API ERROR:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
 }
