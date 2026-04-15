@@ -73,11 +73,20 @@ async function saveImage(url) {
     });
 
     const data = await res.json();
-    const images = data.record.imagenes;
 
-    images.unshift(url);
+    // 🔥 asegurar que siempre exista el array
+    let images = [];
 
-    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+    if (data.record && Array.isArray(data.record.imagenes)) {
+      images = data.record.imagenes;
+    }
+
+    // evitar duplicados
+    if (!images.includes(url)) {
+      images.unshift(url);
+    }
+
+    const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -87,6 +96,9 @@ async function saveImage(url) {
         imagenes: images
       })
     });
+
+    const result = await response.json();
+    console.log("Guardado OK:", result);
 
   } catch (error) {
     console.log("Error guardando:", error);
