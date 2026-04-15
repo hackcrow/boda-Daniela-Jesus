@@ -1,115 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Fiesta Rafa 2026 📸</title>
-  <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
-      color: white;
-      text-align: center;
-    }
+<title>Fiesta 2026 📸</title>
 
-    h1 {
-      margin-top: 40px;
-      font-size: 2.5em;
-      animation: fadeIn 1.5s ease-in-out;
-    }
+<script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
 
-    p {
-      opacity: 0.7;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
+  color: white;
+  text-align: center;
+}
 
-    button {
-      margin-top: 20px;
-      padding: 15px 30px;
-      font-size: 18px;
-      border: none;
-      border-radius: 30px;
-      background: linear-gradient(45deg, #ff00cc, #3333ff);
-      color: white;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
+/* 🔥 CONTENEDOR */
+.container {
+  padding: 20px;
+}
 
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(255,0,200,0.6);
-    }
+/* 🔥 TITULO */
+h1 {
+  font-size: 28px;
+  margin-top: 20px;
+}
 
-    #gallery {
-      margin-top: 40px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-      padding: 20px;
-    }
+/* 🔥 BOTONES */
+button {
+  margin: 10px;
+  padding: 14px 25px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(45deg, #ff00cc, #3333ff);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
 
-    img {
-      width: 100%;
-      border-radius: 15px;
-      animation: popIn 0.5s ease;
-    }
+/* 🔥 GALERIA RESPONSIVE */
+#gallery {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 10px;
+}
 
-    .contador {
-      margin-top: 10px;
-      font-size: 14px;
-      opacity: 0.6;
-    }
+/* Tablet */
+@media (min-width: 600px) {
+  #gallery {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(-20px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
+/* Desktop */
+@media (min-width: 900px) {
+  #gallery {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
 
-    @keyframes popIn {
-      from {transform: scale(0.8); opacity: 0;}
-      to {transform: scale(1); opacity: 1;}
-    }
-  </style>
+img {
+  width: 100%;
+  border-radius: 10px;
+  animation: fadeIn 0.5s ease;
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from {opacity: 0; transform: scale(0.9);}
+  to {opacity: 1; transform: scale(1);}
+}
+
+</style>
 </head>
 
 <body>
 
-  <h1>🔥 Fiesta Rafa 2026 📸</h1>
-  <p>Escanea, sube tus fotos y sé parte del desmadre 😎</p>
+<div class="container">
+  <h1>🔥 Fiesta 2026 📸</h1>
 
   <button onclick="openWidget()">📸 Subir fotos</button>
+  <button onclick="loadImages()">🔄 Recargar fotos</button>
+</div>
 
-  <div class="contador" id="contador">0 fotos subidas</div>
+<div id="gallery"></div>
 
-  <div id="gallery"></div>
-
-<script>
-let contador = 0;
-
-function openWidget() {
-  cloudinary.openUploadWidget({
-    cloudName: "fiesta-mia",
-    uploadPreset: "TU_UPLOAD_PRESET",
-    sources: ["local", "camera"],
-    multiple: true,
-    maxFileSize: 10000000,
-    clientAllowedFormats: ["jpg","png","jpeg"]
-  },
-  (error, result) => {
-    if (!error && result && result.event === "success") {
-
-      const img = document.createElement("img");
-      img.src = result.info.secure_url;
-
-      document.getElementById("gallery").prepend(img);
-
-      contador++;
-      document.getElementById("contador").innerText = contador + " fotos subidas";
-    }
-  });
-}
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
