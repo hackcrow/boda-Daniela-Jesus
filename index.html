@@ -71,6 +71,13 @@ img:hover {
   padding: 10px;
   border-radius: 10px;
 }
+
+#preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 10px;
+}
 </style>
 </head>
 
@@ -79,10 +86,12 @@ img:hover {
 <div class="container">
   <h1>🔥 Fiesta 2026 !📸</h1>
 
-  <button id="uploadBtn">📸 Subir fotos</button>
+  <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+
+<button id="uploadBtn">📸 Subir fotos</button>
   <button onclick="clearGallery()" class="btn-clear">🗑️</button>
 </div>
-
+<div id="preview"></div>
 <div id="gallery"></div>
 
 <script src="app.js"></script>
