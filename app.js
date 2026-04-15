@@ -10,20 +10,28 @@ let isSaving = false;
 
 // 📸 SUBIR FOTO
 function openWidget() {
+  let uploadedImages = [];
+
   cloudinary.openUploadWidget({
     cloudName: cloudName,
     uploadPreset: uploadPreset,
     sources: ["local", "camera"],
-    multiple: true,
-    tags: ["bodaDanielaJesus"] // 🔥 aquí
+    multiple: true
   },
   (error, result) => {
-    if (!error && result && result.event === "success") {
 
-      const url = result.info.secure_url;
+    if (!error && result) {
 
-      addImage(url);
-      saveImage(url);
+      if (result.event === "success") {
+        uploadedImages.push(result.info.secure_url);
+        addImage(result.info.secure_url); // se ve inmediato
+      }
+
+      // 🔥 cuando termina todo el batch
+      if (result.event === "queues-end") {
+        saveMultipleImages(uploadedImages);
+        uploadedImages = [];
+      }
 
     }
   });
@@ -103,6 +111,47 @@ function saveImage(url) {
       console.log("Error guardando:", error);
     }
   });
+}
+
+async function saveMultipleImages(newUrls) {
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+      headers: {
+        "X-Master-Key": API_KEY
+      }
+    });
+
+    const data = await res.json();
+
+    let images = [];
+
+    if (data.record && Array.isArray(data.record.imagenes)) {
+      images = data.record.imagenes;
+    }
+
+    // 🔥 agregar todas juntas
+    newUrls.forEach(url => {
+      if (!images.includes(url)) {
+        images.unshift(url);
+      }
+    });
+
+    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": API_KEY
+      },
+      body: JSON.stringify({
+        imagenes: images
+      })
+    });
+
+    console.log("Guardadas todas:", newUrls.length);
+
+  } catch (error) {
+    console.log("Error guardando múltiples:", error);
+  }
 }
 
 // 🚀 AUTO REFRESH (simula tiempo real)
