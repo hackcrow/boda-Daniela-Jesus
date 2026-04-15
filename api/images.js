@@ -6,17 +6,29 @@ const redis = new Redis({
 });
 
 const KEY = "images";
+const allowedOrigins = ["https://hackcrow.github.io"];
 
 export default async function handler(req, res) {
   try {
 
-    // 📥 GET (obtener todas)
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    if (req.method === "OPTIONS") {
+      return res.status(200).end();
+    }
+
     if (req.method === "GET") {
       const images = await redis.lrange(KEY, 0, -1);
       return res.status(200).json(images || []);
     }
 
-    // 📤 POST (guardar)
     if (req.method === "POST") {
       const { url } = req.body;
 
@@ -29,7 +41,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
-    // 🗑️ DELETE (borrar todo)
     if (req.method === "DELETE") {
       await redis.del(KEY);
       return res.status(200).json({ success: true });
