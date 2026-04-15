@@ -1,4 +1,4 @@
-<script>
+
 const cloudName = "dazidfv1m";
 const uploadPreset = "fiesta-mia"; 
 const folder = "bodaDanielaJesus";
@@ -47,4 +47,3 @@ setInterval(loadImages, 5000);
 
 // primera carga
 loadImages();
-</script>
