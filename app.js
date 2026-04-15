@@ -1,11 +1,8 @@
-
 const cloudName = "dazidfv1m";
 const uploadPreset = "fiesta-mia"; 
-const folder = "upload";
+const folder = "bodaDanielaJesus";
 
-let loadedImages = new Set();
-
-// BOTÓN SUBIR
+// 📸 SUBIR
 function openWidget() {
   cloudinary.openUploadWidget({
     cloudName: cloudName,
@@ -13,37 +10,32 @@ function openWidget() {
     folder: folder,
     sources: ["local", "camera"],
     multiple: true
+  },
+  (error, result) => {
+    if (!error && result && result.event === "success") {
+      addImage(result.info.secure_url);
+    }
   });
 }
 
-// FEED EN VIVO
-async function loadImages() {
-  try {
-    const url = `https://res.cloudinary.com/${cloudName}/image/list/${folder}.json`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-
-    const images = data.resources.sort((a, b) => b.created_at.localeCompare(a.created_at));
-
-    images.forEach(img => {
-      if (!loadedImages.has(img.public_id)) {
-        loadedImages.add(img.public_id);
-
-        const image = document.createElement("img");
-        image.src = `https://res.cloudinary.com/${cloudName}/image/upload/${img.public_id}.jpg`;
-
-        document.getElementById("gallery").prepend(image);
-      }
-    });
-
-  } catch (err) {
-    console.log("Error cargando imágenes:", err);
-  }
+// 🔥 AGREGAR IMAGEN
+function addImage(url) {
+  const img = document.createElement("img");
+  img.src = url;
+  document.getElementById("gallery").prepend(img);
 }
 
-// refresca cada 5 seg
-setInterval(loadImages, 5000);
+// 🔄 CARGAR IMÁGENES (PRO TIP: lista manual)
+async function loadImages() {
+  try {
+    // ⚠️ aquí usamos una lista manual temporal
+    const images = [
+      // pega aquí URLs de prueba si quieres
+    ];
 
-// primera carga
-loadImages();
+    images.forEach(url => addImage(url));
+
+  } catch (e) {
+    console.log(e);
+  }
+}
