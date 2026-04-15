@@ -6,13 +6,16 @@ const API_KEY = "$2a$10$eT1ZGxw9WFErBX5VhYLGnutB4dsjwHnTABwA.p76iLx90hDMW9bSO";
 
 let loadedImages = new Set();
 
+let isSaving = false;
+
 // 📸 SUBIR FOTO
 function openWidget() {
   cloudinary.openUploadWidget({
     cloudName: cloudName,
     uploadPreset: uploadPreset,
     sources: ["local", "camera"],
-    multiple: true
+    multiple: true,
+    tags: ["bodaDanielaJesus"] // 🔥 aquí
   },
   (error, result) => {
     if (!error && result && result.event === "success") {
@@ -49,13 +52,8 @@ async function loadImages() {
 
     const data = await res.json();
 
-    const gallery = document.getElementById("gallery");
-    gallery.innerHTML = "";
-
-    loadedImages.clear();
-
     data.record.imagenes.forEach(url => {
-      addImage(url);
+      addImage(url); // ya evita duplicados
     });
 
   } catch (error) {
@@ -65,6 +63,9 @@ async function loadImages() {
 
 // 💾 GUARDAR EN JSONBIN
 async function saveImage(url) {
+  if (isSaving) return; // evita choques
+  isSaving = true;
+
   try {
     const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
       headers: {
@@ -74,19 +75,17 @@ async function saveImage(url) {
 
     const data = await res.json();
 
-    // 🔥 asegurar que siempre exista el array
     let images = [];
 
     if (data.record && Array.isArray(data.record.imagenes)) {
       images = data.record.imagenes;
     }
 
-    // evitar duplicados
     if (!images.includes(url)) {
       images.unshift(url);
     }
 
-    const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -97,12 +96,11 @@ async function saveImage(url) {
       })
     });
 
-    const result = await response.json();
-    console.log("Guardado OK:", result);
-
   } catch (error) {
     console.log("Error guardando:", error);
   }
+
+  isSaving = false;
 }
 
 // 🚀 AUTO REFRESH (simula tiempo real)
