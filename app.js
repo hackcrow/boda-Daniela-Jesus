@@ -68,8 +68,20 @@ async function loadImages() {
   }
 }
 
+async function clearGallery() {
+  const confirmDelete = confirm("¿Seguro que quieres borrar TODAS las fotos?");
+  if (!confirmDelete) return;
+
+  await fetch("/api/images", {
+    method: "DELETE"
+  });
+
+  document.getElementById("gallery").innerHTML = "";
+}
+
 // 🚀 AUTO REFRESH (cada 3 segundos)
 setInterval(loadImages, 3000);
 
 // 🔥 CARGA INICIAL
 loadImages();
+
