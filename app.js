@@ -83,3 +83,32 @@ async function loadImages() {
 }
 
 loadImages();
+
+async function saveImage(url) {
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+      headers: {
+        "X-Master-Key": API_KEY
+      }
+    });
+
+    const data = await res.json();
+    const images = data.record.imagenes;
+
+    images.unshift(url);
+
+    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": API_KEY
+      },
+      body: JSON.stringify({
+        imagenes: images
+      })
+    });
+
+  } catch (error) {
+    console.log("Error guardando:", error);
+  }
+}
