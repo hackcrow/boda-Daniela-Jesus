@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Fiesta Rafa 2026 📸</title>
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
-
+  <script src="app.js"></script>
   <style>
     body {
       margin: 0;
@@ -47,54 +47,6 @@
 <button onclick="openWidget()">📸 Subir fotos</button>
 
 <div id="gallery"></div>
-
-<script>
-const cloudName = "dazidfv1m";
-const uploadPreset = "fiesta-mia";
-const folder = "bodaDanielaJesus"; // mismo que pusiste en Cloudinary
-
-let loadedImages = new Set();
-
-function openWidget() {
-  cloudinary.openUploadWidget({
-    cloudName: cloudName,
-    uploadPreset: uploadPreset,
-    sources: ["local", "camera"],
-    multiple: true
-  });
-}
-
-// 🔥 FEED EN VIVO
-async function loadImages() {
-  try {
-    const res = await fetch(
-      `https://res.cloudinary.com/${cloudName}/image/list/${folder}.json`
-    );
-
-    const data = await res.json();
-
-    data.resources.forEach(img => {
-      if (!loadedImages.has(img.public_id)) {
-        loadedImages.add(img.public_id);
-
-        const image = document.createElement("img");
-        image.src = `https://res.cloudinary.com/${cloudName}/image/upload/${img.public_id}.jpg`;
-
-        document.getElementById("gallery").prepend(image);
-      }
-    });
-
-  } catch (err) {
-    console.log("Error cargando imágenes", err);
-  }
-}
-
-// refresca cada 5 segundos
-setInterval(loadImages, 5000);
-
-// carga inicial
-loadImages();
-</script>
 
 </body>
 </html>
