@@ -1,7 +1,7 @@
 
 const cloudName = "dazidfv1m";
 const uploadPreset = "fiesta-mia"; 
-const folder = "bodaDanielaJesus";
+const folder = "upload";
 
 let loadedImages = new Set();
 
