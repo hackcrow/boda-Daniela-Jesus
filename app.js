@@ -8,6 +8,8 @@ let loadedImages = new Set();
 
 let isSaving = false;
 
+let globalImages = [];
+
 // 📸 SUBIR FOTO
 function openWidget() {
   let uploadedImages = [];
@@ -24,12 +26,22 @@ function openWidget() {
 
       if (result.event === "success") {
         uploadedImages.push(result.info.secure_url);
-        addImage(result.info.secure_url); // se ve inmediato
       }
 
-      // 🔥 cuando termina todo el batch
       if (result.event === "queues-end") {
-        saveMultipleImages(uploadedImages);
+
+        // 🔥 agregar todas al estado local
+        uploadedImages.forEach(url => {
+          if (!globalImages.includes(url)) {
+            globalImages.unshift(url);
+          }
+        });
+
+        renderImages();
+
+        // 🔥 guardar TODO junto (una sola vez)
+        saveAllImages();
+
         uploadedImages = [];
       }
 
@@ -63,9 +75,11 @@ async function loadImages() {
 
     const data = await res.json();
 
-    data.record.imagenes.forEach(url => {
-      addImage(url); // ya evita duplicados
-    });
+    if (data.record && Array.isArray(data.record.imagenes)) {
+      globalImages = data.record.imagenes;
+    }
+
+    renderImages();
 
   } catch (error) {
     console.log("Error cargando imágenes:", error);
@@ -73,44 +87,24 @@ async function loadImages() {
 }
 
 // 💾 GUARDAR EN JSONBIN
-function saveImage(url) {
-  saveQueue = saveQueue.then(async () => {
-    try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-        headers: {
-          "X-Master-Key": API_KEY
-        }
-      });
+async function saveAllImages() {
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": API_KEY
+      },
+      body: JSON.stringify({
+        imagenes: globalImages
+      })
+    });
 
-      const data = await res.json();
+    console.log("Guardado completo:", globalImages.length);
 
-      let images = [];
-
-      if (data.record && Array.isArray(data.record.imagenes)) {
-        images = data.record.imagenes;
-      }
-
-      if (!images.includes(url)) {
-        images.unshift(url);
-      }
-
-      await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Master-Key": API_KEY
-        },
-        body: JSON.stringify({
-          imagenes: images
-        })
-      });
-
-      console.log("Guardado:", url);
-
-    } catch (error) {
-      console.log("Error guardando:", error);
-    }
-  });
+  } catch (error) {
+    console.log("Error guardando:", error);
+  }
 }
 
 async function saveMultipleImages(newUrls) {
@@ -152,6 +146,17 @@ async function saveMultipleImages(newUrls) {
   } catch (error) {
     console.log("Error guardando múltiples:", error);
   }
+}
+
+function renderImages() {
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  globalImages.forEach(url => {
+    const img = document.createElement("img");
+    img.src = url;
+    gallery.appendChild(img);
+  });
 }
 
 // 🚀 AUTO REFRESH (simula tiempo real)
