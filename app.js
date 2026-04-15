@@ -85,3 +85,41 @@ setInterval(loadImages, 3000);
 // 🔥 CARGA INICIAL
 loadImages();
 
+let isAdmin = false;
+const ADMIN_PASSWORD = "1234"; // 🔐 cámbiala
+
+// 👀 activar modo admin con tecla secreta
+document.addEventListener("keydown", (e) => {
+  if (e.key === "A" && e.shiftKey) {
+    const pass = prompt("Contraseña admin:");
+
+    if (pass === ADMIN_PASSWORD) {
+      isAdmin = true;
+      showAdminButton();
+    } else {
+      alert("Contraseña incorrecta");
+    }
+  }
+});
+
+// 🔥 mostrar botón
+function showAdminButton() {
+  const btn = document.createElement("button");
+  btn.innerText = "🗑️ Limpiar fotos";
+  btn.className = "btn-clear";
+  btn.onclick = clearGallery;
+
+  document.body.appendChild(btn);
+}
+
+// 🧨 borrar todo
+async function clearGallery() {
+  const confirmDelete = confirm("¿Seguro que quieres borrar TODAS las fotos?");
+  if (!confirmDelete) return;
+
+  await fetch("/api/images", {
+    method: "DELETE"
+  });
+
+  document.getElementById("gallery").innerHTML = "";
+}
