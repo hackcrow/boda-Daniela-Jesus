@@ -25,3 +25,13 @@ export default async function handler(req, res) {
   }
 
 }
+
+if (url) {
+  const exists = await redis.lrange(KEY, 0, -1);
+
+  if (!exists.includes(url)) {
+    await redis.lpush(KEY, url);
+  }
+}
+
+await redis.ltrim(KEY, 0, 199); // máximo 200 fotos
