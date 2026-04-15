@@ -36,13 +36,19 @@ function addImage(url) {
 // 💾 GUARDAR EN VERCEL API
 async function saveImage(url) {
   try {
-    await fetch("/api/images", {
+    console.log("Guardando:", url);
+
+    const res = await fetch("/api/images", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ url })
     });
+
+    const data = await res.json();
+    console.log("Respuesta API:", data);
+
   } catch (error) {
     console.log("Error guardando:", error);
   }
