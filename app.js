@@ -1,52 +1,53 @@
 const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
+
 const cloudName = "dazidfv1m";
 const uploadPreset = "fiesta-mia";
 const folder = "bodaDanielaJesus";
 
+// 📸 SUBIR FOTO
 function openWidget() {
   cloudinary.openUploadWidget({
-    cloudName: cloudName,
-    uploadPreset: uploadPreset,
-    folder: folder,
+    cloudName,
+    uploadPreset,
+    folder,
     sources: ["local", "camera"],
-    multiple: true
+    multiple: false
   },
   async (error, result) => {
     if (!error && result && result.event === "success") {
 
       const url = result.info.secure_url;
 
-      // 🔥 Mostrar en pantalla
-      const img = document.createElement("img");
-      img.src = url;
-      document.getElementById("gallery").prepend(img);
+      console.log("Subida:", url);
 
-      // 🔥 Guardar en Upstash
+      // 🔥 mostrar instantáneamente
+      addImage(url);
+
+      // 🔥 guardar en backend
       await saveImage(url);
+
+      // 🔥 sincronizar con todos
+      await loadImages();
     }
   });
 }
 
+// 💾 GUARDAR
 async function saveImage(url) {
   try {
-    console.log("Guardando:", url);
-
-    const res = await fetch(API_URL, {
+    await fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ url })
     });
-
-    const data = await res.json();
-    console.log("Respuesta API:", data);
-
   } catch (error) {
     console.log("Error guardando:", error);
   }
 }
 
+// 📥 CARGAR TODAS
 async function loadImages() {
   try {
     const res = await fetch(API_URL);
@@ -55,32 +56,36 @@ async function loadImages() {
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    data.forEach(url => {
-      const img = document.createElement("img");
-      img.src = url;
-      gallery.appendChild(img);
-    });
+    data.forEach(url => addImage(url));
 
   } catch (error) {
-    console.log("Error cargando imágenes:", error);
+    console.log("Error cargando:", error);
   }
 }
 
+// 🖼️ AGREGAR A GALERÍA
+function addImage(url) {
+  const img = document.createElement("img");
+  img.src = url;
+  document.getElementById("gallery").prepend(img);
+}
+
+// 🗑️ BORRAR TODO
 async function clearGallery() {
-  const confirmDelete = confirm("¿Seguro que quieres borrar TODAS las fotos?");
+  const confirmDelete = confirm("¿Borrar todas las fotos?");
   if (!confirmDelete) return;
 
-  await fetch(API_URL, {
-    method: "DELETE"
-  });
+  await fetch(API_URL, { method: "DELETE" });
 
   document.getElementById("gallery").innerHTML = "";
 }
 
+// 🚀 INICIALIZAR
 document.addEventListener("DOMContentLoaded", () => {
   loadImages();
 
   document.getElementById("uploadBtn").addEventListener("click", openWidget);
 });
 
-window.openWidget = openWidget;
+// 🔄 AUTO REFRESH (feed en vivo)
+setInterval(loadImages, 4000);
