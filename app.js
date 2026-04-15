@@ -1,4 +1,4 @@
-const API_URL = "https://TU-APP.vercel.app/api/images";
+const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 
 async function saveImage(url) {
   try {
