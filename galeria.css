@@ -23,9 +23,10 @@ body {
 
 /* TEXTO */
 .hero-text {
-  font-family: 'Allura', cursive;
-  font-size: 30px;
+  font-family: 'Great Vibes', cursive;
+  font-size: 28px;
   color: #6b705c;
+  margin-top: 12px;
 }
 
 /* GALERIA */
