@@ -119,3 +119,13 @@ body.modal-open > *:not(#modal) {
     transform: scale(1);
   }
 }
+
+#closeModal {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  font-size: 40px;
+  color: white;
+  cursor: pointer;
+  z-index: 10000;
+}
