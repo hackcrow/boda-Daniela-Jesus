@@ -45,7 +45,14 @@ function addImageAnimated(url) {
 // ================= LOAD =================
 async function loadImages() {
   try {
-    const res = await fetch(API_URL + "?t=" + Date.now());
+   const res = await fetch(API_URL, {
+      method: "GET",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+      }
+    });
     const data = await res.json();
 
     const gallery = document.getElementById("gallery");
