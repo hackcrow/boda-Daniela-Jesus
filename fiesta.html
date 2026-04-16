@@ -4,100 +4,106 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fiesta 2026 📸</title>
-
-<script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+<title>Fotos Boda Jesus y Daniela 📸</title>
 
 <style>
 body {
   margin: 0;
   font-family: Arial;
-  background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
-  color: white;
+  background: linear-gradient(135deg, #f1f1f1, #e0e4d7, #d6dcc5);
+  color: #333;
   text-align: center;
 }
 
-/* 🔥 CONTENEDOR */
-.container {
-  padding: 20px;
-}
-
-/* 🔥 TITULO */
 h1 {
-  font-size: 28px;
-  margin-top: 20px;
+  color: #2f3e2f;
 }
 
-/* 🔥 BOTONES */
 button {
   margin: 10px;
   padding: 14px 25px;
   border-radius: 30px;
   border: none;
-  background: linear-gradient(45deg, #ff00cc, #3333ff);
+  background: linear-gradient(45deg, #6c6e59, #4CAF50);
   color: white;
   font-size: 16px;
   cursor: pointer;
 }
 
-/* 🔥 GALERIA RESPONSIVE */
+#preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 #gallery {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  column-count: 2;
+  column-gap: 8px;
   padding: 10px;
 }
 
-/* Tablet */
 @media (min-width: 600px) {
-  #gallery {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  #gallery { column-count: 3; }
 }
 
-/* Desktop */
 @media (min-width: 900px) {
-  #gallery {
-    grid-template-columns: repeat(5, 1fr);
-  }
+  #gallery { column-count: 5; }
 }
 
-img {
+#gallery img {
   width: 100%;
-  border-radius: 10px;
-  animation: fadeIn 0.5s ease;
-}
-
-/* Animación */
-@keyframes fadeIn {
-  from {opacity: 0; transform: scale(0.9);}
-  to {opacity: 1; transform: scale(1);}
-}
-
-img {
-  width: 100%;
+  margin-bottom: 8px;
   border-radius: 12px;
-  transition: all 0.3s ease;
+  break-inside: avoid;
+  cursor: pointer;
 }
 
-img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px #ff00cc;
+/* 🔥 MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  justify-content: center;
+  align-items: center;
 }
 
+.modal img {
+  max-width: 95%;
+  max-height: 90%;
+  border-radius: 12px;
+}
+
+#closeModal {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 35px;
+  color: white;
+  cursor: pointer;
+}
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h1>🔥 Fiesta 2026 @📸</h1>
+<h1>Fotos Boda Jesus y Daniela 📸</h1>
 
-  <button onclick="openWidget()">📸 Subir fotos</button>
- <!-- <button onclick="loadImages()">🔄 Recargar fotos</button>-->
-</div>
+<input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+<button id="uploadBtn">📸 Comparte tus fotos 🤗</button>
 
+<div id="preview"></div>
 <div id="gallery"></div>
+
+<!-- 🔥 MODAL -->
+<div id="modal" class="modal">
+  <span id="closeModal">&times;</span>
+  <img id="modalImg">
+</div>
 
 <script src="app.js"></script>
 
