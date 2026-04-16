@@ -12,6 +12,45 @@ const TIMEOUT_MS = 30000;
 let loadedImages = new Set();
 window.audioEnabled = false;
 
+function launchConfetti() {
+  const duration = 1500;
+  const end = Date.now() + duration;
+
+  (function frame() {
+    const colors = ["#ff00cc", "#00ffcc", "#ffff00"];
+
+    for (let i = 0; i < 5; i++) {
+      const confetti = document.createElement("div");
+      confetti.style.position = "fixed";
+      confetti.style.width = "8px";
+      confetti.style.height = "8px";
+      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.top = "0px";
+      confetti.style.left = Math.random() * window.innerWidth + "px";
+      confetti.style.opacity = "1";
+      confetti.style.zIndex = "9999";
+      confetti.style.borderRadius = "50%";
+
+      document.body.appendChild(confetti);
+
+      let fall = setInterval(() => {
+        const top = parseFloat(confetti.style.top);
+        confetti.style.top = top + 5 + "px";
+        confetti.style.opacity -= 0.02;
+
+        if (top > window.innerHeight || confetti.style.opacity <= 0) {
+          clearInterval(fall);
+          confetti.remove();
+        }
+      }, 16);
+    }
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  })();
+}
+
 // ================= UTILS =================
 function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
@@ -48,12 +87,20 @@ async function loadImages() {
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
 
+    let newCount = 0;
+
     data.forEach(url => {
       if (!loadedImages.has(url)) {
         loadedImages.add(url);
         addImageAnimated(url);
+        newCount++;
       }
     });
+
+    // 🎉 confetti si llegan varias
+    if (newCount >= 3) {
+      launchConfetti();
+    }
 
   } catch (error) {
     console.log("Error cargando:", error);
