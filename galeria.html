@@ -7,7 +7,7 @@
 <title>Galería 📸</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="galeria.css?v=3">
+<link rel="stylesheet" href="galeria.css?v=10">
 
 </head>
 
@@ -16,23 +16,27 @@
 <div class="top-section">
 
   <div class="hero">
-    <img src="https://codeno.com.mx/nuestra_boda_corregida.png" alt="Nuestra boda">
+    <img src="https://codeno.com.mx/nuestra_boda_corregida.png">
     <p class="hero-text">Galería de nuestra boda</p>
   </div>
 
-  <div class="btn-container">
-    <a href="fiesta.html" class="btn-home">Regresar</a>
+  <!-- 🔥 BOTÓN CENTRADO -->
+  <div class="btn-wrapper">
+    <a href="index.html" class="btn">Volver</a>
   </div>
 
-  <button id="downloadBtn" style="display:none;">
-    📥 Descargar todas las fotos
-  </button>
+  <!-- 🔐 BOTÓN SECRETO -->
+  <div class="btn-wrapper">
+    <button id="downloadBtn" class="btn" style="display:none;">
+      Descargar todas las fotos
+    </button>
+  </div>
 
 </div>
 
 <div id="gallery"></div>
 
-<button id="topBtn">⬆️</button>
+<button id="topBtn">⬆</button>
 
 <!-- MODAL -->
 <div id="modal">
@@ -40,7 +44,7 @@
   <img id="modalImg">
 </div>
 
-<script src="galeria.js?v=3"></script>
+<script src="galeria.js?v=10"></script>
 
 </body>
 </html>
