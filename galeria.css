@@ -94,7 +94,13 @@ body {
   display: none;
 }
 
-/* BOTÓN VOLVER */
+/* CONTENEDOR CENTRADO */
+.btn-container {
+  display: flex;
+  justify-content: center;
+}
+
+/* BOTÓN */
 .btn-home {
   display: inline-block;
   margin: 10px;
