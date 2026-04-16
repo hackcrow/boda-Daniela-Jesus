@@ -30,7 +30,7 @@ function addImageAnimated(url) {
   img.classList.add("new-photo");
   img.onclick = () => openModal(url);
 
-  // 🔥 SIEMPRE ARRIBA
+  // 🔥 siempre arriba
   document.getElementById("gallery").prepend(img);
 
   setTimeout(() => {
@@ -45,14 +45,7 @@ function addImageAnimated(url) {
 // ================= LOAD =================
 async function loadImages() {
   try {
-   const res = await fetch(API_URL, {
-      method: "GET",
-      headers: {
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0"
-      }
-    });
+    const res = await fetch(API_URL + "?t=" + Date.now()); // 🔥 evita cache
     const data = await res.json();
 
     const gallery = document.getElementById("gallery");
@@ -61,7 +54,7 @@ async function loadImages() {
       gallery.innerHTML = "";
       loadedImages.clear();
 
-      // 🔥 IMPORTANTE: pintar TODO en orden como viene
+      // 🔥 pintar como viene (LPUSH ya ordena)
       data.forEach(url => {
         loadedImages.add(url);
 
@@ -76,7 +69,7 @@ async function loadImages() {
       return;
     }
 
-    // 🔥 SOLO agregar nuevas arriba
+    // 🔥 solo nuevas
     data.forEach(url => {
       if (!loadedImages.has(url)) {
         loadedImages.add(url);
