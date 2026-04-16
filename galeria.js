@@ -1,95 +1,102 @@
-body {
-  margin: 0;
-  font-family: Arial;
-  background: linear-gradient(135deg, #fdfef5, #fdfef5, #fdfef5);
-  color: #333;
+const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
+
+let images = [];
+let currentIndex = 0;
+
+// ================= LOAD =================
+async function loadImages() {
+  const res = await fetch(API_URL);
+  images = await res.json();
+
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  images.forEach((url, index) => {
+    const img = document.createElement("img");
+    img.src = url;
+
+    img.onclick = () => openModal(index);
+
+    gallery.appendChild(img);
+  });
 }
 
-/* HERO */
-.hero {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 10px;
+// ================= MODAL =================
+function openModal(index) {
+  currentIndex = index;
+
+  const modal = document.getElementById("modal");
+  const modalImg = document.getElementById("modalImg");
+
+  modal.style.display = "flex";
+  modalImg.src = images[index];
 }
 
-.hero img {
-  width: 90%;
-  max-width: 400px;
-  border-radius: 15px;
-}
+// navegar
+document.addEventListener("keydown", (e) => {
+  if (document.getElementById("modal").style.display !== "flex") return;
 
-/* GALERIA */
-#gallery {
-  column-count: 2;
-  column-gap: 8px;
-  padding: 10px;
-}
+  if (e.key === "ArrowRight") {
+    currentIndex = (currentIndex + 1) % images.length;
+  }
 
-@media (min-width: 600px) {
-  #gallery { column-count: 3; }
-}
+  if (e.key === "ArrowLeft") {
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+  }
 
-@media (min-width: 900px) {
-  #gallery { column-count: 5; }
-}
+  document.getElementById("modalImg").src = images[currentIndex];
+});
 
-#gallery img {
-  width: 100%;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  cursor: pointer;
-  break-inside: avoid;
-}
+// cerrar modal
+document.getElementById("closeModal").onclick = () => {
+  document.getElementById("modal").style.display = "none";
+};
 
-/* MODAL */
-#modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.9);
-  justify-content: center;
-  align-items: center;
-}
+// ================= SCROLL TOP =================
+const topBtn = document.getElementById("topBtn");
 
-#modal img {
-  max-width: 95%;
-  max-height: 90%;
-}
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 300) {
+    topBtn.style.display = "block";
+  } else {
+    topBtn.style.display = "none";
+  }
+});
 
-#closeModal {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  font-size: 35px;
-  color: white;
-  cursor: pointer;
-}
+topBtn.onclick = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
 
-/* BOTÓN DESCARGAR */
-#downloadBtn {
-  margin: 10px;
-  padding: 14px 25px;
-  border-radius: 30px;
-  border: none;
-  background: linear-gradient(45deg, #c5c2a8, #b1b2a6);
-  color: white;
-  cursor: pointer;
-}
+// ================= BOTÓN OCULTO =================
+let secretKeys = [];
 
-/* BOTÓN TOP */
-#topBtn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #b1b2a6;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 50%;
-  font-size: 18px;
-  display: none;
-}
+document.addEventListener("keydown", (e) => {
+  secretKeys.push(e.key.toLowerCase());
+
+  // combo: d + j + 9 (puedes cambiarlo)
+  if (secretKeys.slice(-3).join("") === "dj9") {
+    document.getElementById("downloadBtn").style.display = "inline-block";
+  }
+});
+
+// ================= DESCARGA =================
+document.getElementById("downloadBtn").onclick = async () => {
+  const password = prompt("Ingresa contraseña:");
+
+  if (password !== "1234") {
+    alert("Contraseña incorrecta");
+    return;
+  }
+
+  alert("Preparando descarga...");
+
+  images.forEach((url, i) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `foto_${i}.jpg`;
+    a.click();
+  });
+};
+
+// ================= INIT =================
+loadImages();
