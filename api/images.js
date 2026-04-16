@@ -10,25 +10,33 @@ const allowedOrigins = ["https://hackcrow.github.io"];
 
 export default async function handler(req, res) {
   try {
-
     const origin = req.headers.origin;
 
+    // 🌐 CORS
     if (allowedOrigins.includes(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin);
     }
 
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    // 🔥 ANTI-CACHE GLOBAL (CLAVE)
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
 
     if (req.method === "OPTIONS") {
       return res.status(200).end();
     }
 
+    // ================= GET =================
     if (req.method === "GET") {
       const images = await redis.lrange(KEY, 0, -1);
+
       return res.status(200).json(images || []);
     }
 
+    // ================= POST =================
     if (req.method === "POST") {
       const { url } = req.body;
 
@@ -41,6 +49,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
+    // ================= DELETE =================
     if (req.method === "DELETE") {
       await redis.del(KEY);
       return res.status(200).json({ success: true });
