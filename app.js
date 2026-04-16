@@ -26,33 +26,28 @@ function openModal(url) {
 function addImageAnimated(url) {
   const gallery = document.getElementById("gallery");
 
-  // 🔥 medir posiciones actuales
-  const firstImage = gallery.firstChild;
-  let height = 0;
+  // 🔥 evitar duplicados
+  if (loadedImages.has(url)) return;
 
-  if (firstImage) {
-    height = firstImage.getBoundingClientRect().height + 8; // gap
-  }
+  loadedImages.add(url);
 
-  // 🔥 crear imagen
   const img = document.createElement("img");
   img.src = url;
+
   img.classList.add("new-photo");
   img.onclick = () => openModal(url);
 
-  // 🔥 insertar arriba
   gallery.prepend(img);
 
-  // 🔥 animar desplazamiento de las demás
-  Array.from(gallery.children).forEach((el, index) => {
-    if (index === 0) return; // la nueva no
+  // 🔥 mantener máximo 20
+  while (gallery.children.length > 20) {
+    const last = gallery.lastChild;
+    loadedImages.delete(last.src);
+    gallery.removeChild(last);
+  }
 
-    el.style.transform = `translateY(-${height}px)`;
-
-    requestAnimationFrame(() => {
-      el.style.transform = "";
-    });
-  });
+  setTimeout(() => img.classList.remove("new-photo"), 600);
+}
 
   // 🔥 mantener máximo 20
   while (gallery.children.length > 20) {
@@ -126,7 +121,7 @@ async function uploadToCloudinary(file) {
         if (xhr.status === 200) {
           const data = JSON.parse(xhr.responseText);
 
-          addImageAnimated(data.secure_url);
+          //addImageAnimated(data.secure_url);
 
           await fetch(API_URL, {
             method: "POST",
