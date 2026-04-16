@@ -2,18 +2,25 @@
 body {
   margin: 0;
   font-family: Arial;
-  background: linear-gradient(135deg, #fdfef5, #fdfef5, #fdfef5);
+  background: linear-gradient(135deg, #fdfef5, #fdfef5);
   color: #333;
+
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-/* 🔥 VARIABLES (consistencia total) */
+body.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 :root {
   --spacing: 24px;
-  --radius: 12px;
   --primary: linear-gradient(45deg, #c5c2a8, #b1b2a6);
 }
 
-/* CONTENEDOR GENERAL */
+/* CONTENEDOR */
 .top-section {
   display: flex;
   flex-direction: column;
@@ -34,45 +41,24 @@ body {
   width: 90%;
   max-width: 400px;
   border-radius: 15px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08); /* 🔥 sutil pro */
 }
 
-/* TEXTO */
 .hero-text {
   font-family: 'Great Vibes', cursive;
   font-size: 28px;
   color: #6b705c;
-  margin: 0; /* 🔥 ahora el gap controla todo */
-  letter-spacing: 1px;
 }
 
 /* BOTONES */
-.btn-container {
-  display: flex;
-  justify-content: center;
-}
-
 .btn-home,
 #downloadBtn {
-  display: inline-block;
   padding: 14px 25px;
   border-radius: 30px;
   border: none;
   background: var(--primary);
   color: white;
   text-decoration: none;
-  font-size: 16px;
   cursor: pointer;
-  letter-spacing: 1px;
-  font-weight: 500;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* 🔥 efecto hover pro */
-.btn-home:hover,
-#downloadBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 /* GALERIA */
@@ -80,7 +66,7 @@ body {
   column-count: 2;
   column-gap: 8px;
   padding: 10px;
-  margin-top: var(--spacing); /* 🔥 MISMO ESPACIO */
+  margin-top: var(--spacing);
 }
 
 @media (min-width: 600px) {
@@ -94,16 +80,8 @@ body {
 #gallery img {
   width: 100%;
   margin-bottom: 8px;
-  border-radius: var(--radius);
+  border-radius: 12px;
   cursor: pointer;
-  break-inside: avoid;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* 🔥 hover elegante */
-#gallery img:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
 
 /* MODAL */
@@ -122,7 +100,6 @@ body {
 #modal img {
   max-width: 95%;
   max-height: 90%;
-  border-radius: 10px;
 }
 
 #closeModal {
@@ -134,7 +111,13 @@ body {
   cursor: pointer;
 }
 
-/* BOTÓN TOP */
+/* BLUR */
+body.modal-open #gallery,
+body.modal-open .top-section {
+  filter: blur(8px);
+}
+
+/* BOTON TOP */
 #topBtn {
   position: fixed;
   bottom: 20px;
@@ -144,19 +127,5 @@ body {
   border: none;
   padding: 12px;
   border-radius: 50%;
-  font-size: 18px;
   display: none;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-#topBtn:hover {
-  transform: scale(1.1);
-}
-
-/* 📱 RESPONSIVE FINO */
-@media (min-width: 600px) {
-  :root {
-    --spacing: 28px;
-  }
 }
