@@ -24,15 +24,45 @@ function openModal(url) {
 
 // ================= ANIMACIÓN =================
 function addImageAnimated(url) {
+  const gallery = document.getElementById("gallery");
+
+  // 🔥 medir posiciones actuales
+  const firstImage = gallery.firstChild;
+  let height = 0;
+
+  if (firstImage) {
+    height = firstImage.getBoundingClientRect().height + 8; // gap
+  }
+
+  // 🔥 crear imagen
   const img = document.createElement("img");
   img.src = url;
-
   img.classList.add("new-photo");
   img.onclick = () => openModal(url);
 
-  document.getElementById("gallery").prepend(img);
+  // 🔥 insertar arriba
+  gallery.prepend(img);
 
-  setTimeout(() => img.classList.remove("new-photo"), 700);
+  // 🔥 animar desplazamiento de las demás
+  Array.from(gallery.children).forEach((el, index) => {
+    if (index === 0) return; // la nueva no
+
+    el.style.transform = `translateY(-${height}px)`;
+
+    requestAnimationFrame(() => {
+      el.style.transform = "";
+    });
+  });
+
+  // 🔥 mantener máximo 20
+  while (gallery.children.length > 20) {
+    const last = gallery.lastChild;
+    loadedImages.delete(last.src);
+    gallery.removeChild(last);
+  }
+
+  // limpiar clase
+  setTimeout(() => img.classList.remove("new-photo"), 600);
 }
 
 // ================= LOAD =================
