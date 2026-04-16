@@ -10,18 +10,23 @@ window.addEventListener("load", () => {
 
 // LOAD
 async function loadImages() {
-  const res = await fetch(API_URL);
-  images = await res.json();
+  try {
+    const res = await fetch(API_URL);
+    images = await res.json();
 
-  const gallery = document.getElementById("gallery");
-  gallery.innerHTML = "";
+    const gallery = document.getElementById("gallery");
+    gallery.innerHTML = "";
 
-  images.forEach((url, index) => {
-    const img = document.createElement("img");
-    img.src = url;
-    img.onclick = () => openModal(index);
-    gallery.appendChild(img);
-  });
+    images.forEach((url, index) => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.onclick = () => openModal(index);
+      gallery.appendChild(img);
+    });
+
+  } catch (err) {
+    console.error("Error cargando imágenes:", err);
+  }
 }
 
 // MODAL
@@ -81,25 +86,18 @@ topBtn.onclick = () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
----
-
-# 🔐 BOTÓN SECRETO (AQUÍ ESTÁ LA MAGIA)
-
+// 🔐 BOTÓN SECRETO
 let keys = [];
 
 document.addEventListener("keydown", (e) => {
   keys.push(e.key.toLowerCase());
 
-  // 🔥 combo secreto: d + j + 9
   if (keys.slice(-3).join("") === "dj9") {
     document.getElementById("downloadBtn").style.display = "block";
   }
 });
 
----
-
-# 📥 DESCARGA
-
+// 📥 DESCARGA
 document.getElementById("downloadBtn").onclick = () => {
   const pass = prompt("Ingresa contraseña:");
 
