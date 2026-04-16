@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galería completa</title>
+
+<style>
+body { background:#111; color:white; margin:0; }
+
+#gallery {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+}
+
+img { width:100%; cursor:pointer; }
+
+#topBtn {
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#ff00cc;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<button id="downloadBtn">⬇ Descargar todo</button>
+<button id="topBtn">⬆</button>
+
+<div id="gallery"></div>
+
+<!-- MODAL -->
+<div id="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;align-items:center;justify-content:center;">
+  <img id="modalImg" style="max-width:90%">
+</div>
+
+<script src="galeria.js"></script>
+</body>
+</html>
