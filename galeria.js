@@ -2,122 +2,145 @@ const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 
 let images = [];
 let currentIndex = 0;
+let modalOpen = false;
+let keys = [];
+let startX = 0;
 
-// FADE
+// CACHE ELEMENTS
+const gallery = document.getElementById("gallery");
+const modal = document.getElementById("modal");
+const modalImg = document.getElementById("modalImg");
+const closeModalBtn = document.getElementById("closeModal");
+const topBtn = document.getElementById("topBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+
+// FADE IN
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
 });
 
-// LOAD
+// LOAD IMAGES
 async function loadImages() {
-  const res = await fetch(API_URL);
-  images = await res.json();
+  try {
+    const res = await fetch(API_URL);
+    images = await res.json();
 
-  const gallery = document.getElementById("gallery");
-  gallery.innerHTML = "";
+    gallery.innerHTML = "";
 
-  images.forEach((url, index) => {
-    const img = document.createElement("img");
-    img.src = url;
-    img.onclick = () => openModal(index);
-    gallery.appendChild(img);
-  });
+    images.forEach((url, index) => {
+      const img = document.createElement("img");
+      img.src = url;
+
+      img.addEventListener("click", () => openModal(index));
+
+      gallery.appendChild(img);
+    });
+  } catch (err) {
+    console.error("Error cargando imágenes:", err);
+  }
 }
 
-// MODAL
+// OPEN MODAL
 function openModal(index) {
-  currentIndex = index;
+  if (!images.length) return;
 
-  const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modalImg");
+  currentIndex = index;
+  modalOpen = true;
 
   modal.style.display = "flex";
-  modalImg.src = images[index];
+  modalImg.src = images[currentIndex];
 
   document.body.classList.add("modal-open");
 }
 
-// CERRAR
-document.getElementById("closeModal").onclick = () => {
-  document.getElementById("modal").style.display = "none";
+// CLOSE MODAL
+function closeModal() {
+  modal.style.display = "none";
   document.body.classList.remove("modal-open");
-};
+  modalOpen = false;
+}
 
-document.getElementById("modal").onclick = (e) => {
-  if (e.target.id === "modal") {
-    e.target.style.display = "none";
-    document.body.classList.remove("modal-open");
-  }
-};
+closeModalBtn.addEventListener("click", closeModal);
 
-// TECLADO
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) closeModal();
+});
+
+// NAVIGATION
+function showImage(index) {
+  if (!images.length) return;
+
+  currentIndex = index;
+  modalImg.src = images[currentIndex];
+}
+
+function nextImage() {
+  currentIndex = (currentIndex + 1) % images.length;
+  showImage(currentIndex);
+}
+
+function prevImage() {
+  currentIndex = (currentIndex - 1 + images.length) % images.length;
+  showImage(currentIndex);
+}
+
+// KEYBOARD NAV
 document.addEventListener("keydown", (e) => {
-  if (document.getElementById("modal").style.display !== "flex") return;
+  if (!modalOpen) {
+    keys.push(e.key.toLowerCase());
 
-  if (e.key === "ArrowRight") {
-    currentIndex = (currentIndex + 1) % images.length;
+    if (keys.slice(-3).join("") === "dj9") {
+      downloadBtn.style.display = "block";
+    }
+
+    return;
   }
 
-  if (e.key === "ArrowLeft") {
-    currentIndex = (currentIndex - 1 + images.length) % images.length;
-  }
-
-  document.getElementById("modalImg").src = images[currentIndex];
+  if (e.key === "ArrowRight") nextImage();
+  if (e.key === "ArrowLeft") prevImage();
 });
 
 // SWIPE
-let startX = 0;
-
-const modal = document.getElementById("modal");
-
 modal.addEventListener("touchstart", (e) => {
   startX = e.touches[0].clientX;
 });
 
 modal.addEventListener("touchend", (e) => {
-  let diff = startX - e.changedTouches[0].clientX;
+  if (!modalOpen) return;
 
-  if (diff > 50) currentIndex = (currentIndex + 1) % images.length;
-  if (diff < -50) currentIndex = (currentIndex - 1 + images.length) % images.length;
+  const diff = startX - e.changedTouches[0].clientX;
 
-  document.getElementById("modalImg").src = images[currentIndex];
+  if (diff > 50) nextImage();
+  if (diff < -50) prevImage();
 });
 
-// BOTON TOP
-const topBtn = document.getElementById("topBtn");
-
+// TOP BUTTON
 window.addEventListener("scroll", () => {
   topBtn.style.display = window.scrollY > 300 ? "block" : "none";
 });
 
-topBtn.onclick = () => {
+topBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
-};
-
-// BOTON SECRETO
-let keys = [];
-
-document.addEventListener("keydown", (e) => {
-  keys.push(e.key.toLowerCase());
-
-  if (keys.slice(-3).join("") === "dj9") {
-    document.getElementById("downloadBtn").style.display = "block";
-  }
 });
 
-// DESCARGA
-document.getElementById("downloadBtn").onclick = () => {
+// DOWNLOAD ALL
+downloadBtn.addEventListener("click", () => {
   const pass = prompt("Contraseña:");
 
-  if (pass !== "1234") return alert("Incorrecto");
+  if (pass !== "1234") {
+    alert("Incorrecto");
+    return;
+  }
 
   images.forEach((url, i) => {
     const a = document.createElement("a");
     a.href = url;
     a.download = `foto_${i}.jpg`;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
   });
-};
+});
 
 // INIT
 loadImages();
