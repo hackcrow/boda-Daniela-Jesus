@@ -93,3 +93,17 @@ body {
   font-size: 18px;
   display: none;
 }
+
+/* BOTÓN VOLVER */
+.btn-home {
+  display: inline-block;
+  margin: 10px;
+  padding: 14px 25px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(45deg, #c5c2a8, #b1b2a6);
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  cursor: pointer;
+}
