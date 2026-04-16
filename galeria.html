@@ -3,23 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Galería completa</title>
 
-<link rel="stylesheet" href="galeria.css?v=1">
+<title>Galería 📸</title>
+
+<link rel="stylesheet" href="galeria.css?v=2">
+
 </head>
 
 <body>
 
-<button id="downloadBtn">⬇ Descargar todo</button>
-<button id="topBtn">⬆</button>
-
-<div id="gallery"></div>
-
-<!-- MODAL -->
-<div id="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:black;align-items:center;justify-content:center;">
-  <img id="modalImg" style="max-width:90%">
+<!-- HERO (igual que index) -->
+<div class="hero">
+  <img src="https://codeno.com.mx/nuestra_boda_corregida.png" alt="Nuestra boda">
 </div>
 
-<script src="galeria.js"></script>
+<!-- BOTÓN DESCARGAR (OCULTO) -->
+<button id="downloadBtn" style="display:none;">
+  📥 Descargar todas las fotos
+</button>
+
+<!-- GALERIA -->
+<div id="gallery"></div>
+
+<!-- BOTÓN IR ARRIBA -->
+<button id="topBtn" style="display:none;">⬆️</button>
+
+<!-- MODAL -->
+<div id="modal">
+  <span id="closeModal">&times;</span>
+  <img id="modalImg">
+</div>
+
+<script src="galeria.js?v=2"></script>
+
 </body>
 </html>
