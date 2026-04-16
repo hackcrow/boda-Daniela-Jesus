@@ -42,14 +42,35 @@
 <script src="app.js?v=6"></script>
 
 <script>
+// 🔥 FIX CLAVE: limpiar estado del modal al cargar la página
+window.addEventListener("load", () => {
+  const modal = document.getElementById("modal");
+
+  modal.style.display = "none";
+  document.body.classList.remove("modal-open");
+
+  const img = document.getElementById("modalImg");
+  if (img) img.src = "";
+});
+
 // cerrar modal
 document.getElementById("closeModal").onclick = () => {
-  document.getElementById("modal").style.display = "none";
+  const modal = document.getElementById("modal");
+  const img = document.getElementById("modalImg");
+
+  modal.style.display = "none";
+  document.body.classList.remove("modal-open");
+  if (img) img.src = "";
 };
 
 document.getElementById("modal").onclick = (e) => {
   if (e.target.id === "modal") {
-    document.getElementById("modal").style.display = "none";
+    const modal = document.getElementById("modal");
+    const img = document.getElementById("modalImg");
+
+    modal.style.display = "none";
+    document.body.classList.remove("modal-open");
+    if (img) img.src = "";
   }
 };
 </script>
