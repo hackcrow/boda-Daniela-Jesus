@@ -13,19 +13,6 @@ document.addEventListener("click", () => {
   window.audioEnabled = true;
 }, { once: true });
 
-
-// ================= 🔥 FIX GLOBAL MODAL =================
-window.addEventListener("load", () => {
-  const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modalImg");
-
-  if (modal) modal.style.display = "none";
-  if (modalImg) modalImg.src = "";
-
-  document.body.classList.remove("modal-open");
-});
-
-
 // ================= MODAL =================
 function openModal(url) {
   const modal = document.getElementById("modal");
@@ -33,26 +20,13 @@ function openModal(url) {
 
   modal.style.display = "flex";
   modalImg.src = url;
-
-  // 🔥 IMPORTANTE: evita fondo negro fantasma
-  document.body.classList.add("modal-open");
 }
-
-function closeModal() {
-  const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modalImg");
-
-  modal.style.display = "none";
-  modalImg.src = "";
-
-  document.body.classList.remove("modal-open");
-}
-
 
 // ================= ANIMACIÓN =================
 function addImageAnimated(url) {
   const gallery = document.getElementById("gallery");
 
+  // 🔥 evitar duplicados
   if (loadedImages.has(url)) return;
 
   loadedImages.add(url);
@@ -63,17 +37,19 @@ function addImageAnimated(url) {
   img.classList.add("new-photo");
   img.onclick = () => openModal(url);
 
+  // 🔥 insertar arriba
   gallery.prepend(img);
 
+  // 🔥 mantener máximo 20
   while (gallery.children.length > 20) {
     const last = gallery.lastChild;
     loadedImages.delete(last.src);
     gallery.removeChild(last);
   }
 
+  // limpiar animación
   setTimeout(() => img.classList.remove("new-photo"), 600);
 }
-
 
 // ================= LOAD =================
 async function loadImages() {
@@ -83,6 +59,7 @@ async function loadImages() {
 
     const gallery = document.getElementById("gallery");
 
+    // 🔥 SOLO 20 MÁS RECIENTES
     const latest = data.slice(0, 20);
 
     if (isFirstLoad) {
@@ -103,6 +80,7 @@ async function loadImages() {
       return;
     }
 
+    // 🔥 nuevas imágenes
     latest.forEach(url => {
       if (!loadedImages.has(url)) {
         addImageAnimated(url);
@@ -114,8 +92,7 @@ async function loadImages() {
   }
 }
 
-
-// ================= UPLOAD =================
+// ================= UPLOAD CON PROGRESO =================
 async function uploadToCloudinary(file) {
   return new Promise((resolve, reject) => {
 
@@ -143,6 +120,7 @@ async function uploadToCloudinary(file) {
         if (xhr.status === 200) {
           const data = JSON.parse(xhr.responseText);
 
+          // 🔥 SOLO guardar, NO insertar (evita duplicados)
           await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -166,14 +144,11 @@ async function uploadToCloudinary(file) {
   });
 }
 
-
 // ================= INIT =================
 document.addEventListener("DOMContentLoaded", () => {
 
   const fileInput = document.getElementById("fileInput");
   const uploadBtn = document.getElementById("uploadBtn");
-  const closeModalBtn = document.getElementById("closeModal");
-  const modal = document.getElementById("modal");
 
   uploadBtn.onclick = () => fileInput.click();
 
@@ -185,18 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
     fileInput.value = "";
   });
 
-  // 🔥 cerrar modal correctamente
-  closeModalBtn.onclick = closeModal;
-
-  modal.onclick = (e) => {
-    if (e.target.id === "modal") {
-      closeModal();
-    }
-  };
-
   loadImages();
 });
-
 
 // 🔄 auto refresh
 setInterval(loadImages, 3000);
