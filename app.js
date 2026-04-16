@@ -108,6 +108,15 @@ function openModal(index) {
   document.body.classList.add("modal-open");
 }
 
+function closeModal() {
+  const modal = document.getElementById("modal");
+
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  document.body.classList.remove("modal-open");
+}
+
 // ================= SWIPE =================
 
 let startX = 0;
@@ -170,3 +179,26 @@ async function uploadToCloudinary(file) {
 
 loadImages();
 setInterval(loadImages, 3000);
+
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("modal");
+  const closeBtn = document.getElementById("closeModal");
+
+  if (closeBtn) {
+    closeBtn.onclick = closeModal;
+  }
+
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target.id === "modal") {
+        closeModal();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
+  });
+});
