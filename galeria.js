@@ -3,12 +3,12 @@ const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 let images = [];
 let currentIndex = 0;
 
-// fade
+// FADE
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
 });
 
-// cargar imágenes
+// LOAD
 async function loadImages() {
   const res = await fetch(API_URL);
   images = await res.json();
@@ -24,52 +24,32 @@ async function loadImages() {
   });
 }
 
-// abrir modal
+// MODAL
 function openModal(index) {
   currentIndex = index;
 
   const modal = document.getElementById("modal");
   const modalImg = document.getElementById("modalImg");
 
-  modal.classList.add("active"); // 👈 ya no usamos style.display
+  modal.classList.add("active");
   modalImg.src = images[index];
 
   document.body.classList.add("modal-open");
 }
 
-// cerrar modal
+// CLOSE
 function closeModal() {
-  const modal = document.getElementById("modal");
-
-  modal.classList.remove("active");
+  document.getElementById("modal").classList.remove("active");
   document.body.classList.remove("modal-open");
 }
 
-// eventos cierre
 document.getElementById("closeModal").onclick = closeModal;
 
 document.getElementById("modal").onclick = (e) => {
   if (e.target.id === "modal") closeModal();
 };
 
-// teclado
-document.addEventListener("keydown", (e) => {
-  const modal = document.getElementById("modal");
-
-  if (!modal.classList.contains("active")) return;
-
-  if (e.key === "ArrowRight") {
-    currentIndex = (currentIndex + 1) % images.length;
-  }
-
-  if (e.key === "ArrowLeft") {
-    currentIndex = (currentIndex - 1 + images.length) % images.length;
-  }
-
-  document.getElementById("modalImg").src = images[currentIndex];
-});
-
-// swipe
+// SWIPE
 let startX = 0;
 
 const modal = document.getElementById("modal");
@@ -90,5 +70,51 @@ modal.addEventListener("touchend", (e) => {
   document.getElementById("modalImg").src = images[currentIndex];
 });
 
-// init
+// BOTÓN TOP
+const topBtn = document.getElementById("topBtn");
+
+window.addEventListener("scroll", () => {
+  topBtn.style.display = window.scrollY > 300 ? "block" : "none";
+});
+
+topBtn.onclick = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+---
+
+# 🔐 BOTÓN SECRETO (AQUÍ ESTÁ LA MAGIA)
+
+let keys = [];
+
+document.addEventListener("keydown", (e) => {
+  keys.push(e.key.toLowerCase());
+
+  // 🔥 combo secreto: d + j + 9
+  if (keys.slice(-3).join("") === "dj9") {
+    document.getElementById("downloadBtn").style.display = "block";
+  }
+});
+
+---
+
+# 📥 DESCARGA
+
+document.getElementById("downloadBtn").onclick = () => {
+  const pass = prompt("Ingresa contraseña:");
+
+  if (pass !== "boda123") {
+    alert("Contraseña incorrecta");
+    return;
+  }
+
+  images.forEach((url, i) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `foto_${i}.jpg`;
+    a.click();
+  });
+};
+
+// INIT
 loadImages();
