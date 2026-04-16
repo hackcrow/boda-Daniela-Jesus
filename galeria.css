@@ -88,10 +88,10 @@ body.loaded {
 #modal {
   display: none;
   position: fixed;
-  inset: 0; /* 🔥 reemplaza top/left/width/height */
-  
+  inset: 0;
+
   width: 100vw;
-  height: 100vh;
+  height: 100dvh; /* 🔥 CLAVE */
 
   background: rgba(0,0,0,0.95);
 
@@ -99,17 +99,23 @@ body.loaded {
   justify-content: center;
   align-items: center;
 
-  padding-top: env(safe-area-inset-top); /* 🔥 iPhone notch fix */
-  padding-bottom: env(safe-area-inset-bottom);
-
   z-index: 9999;
 }
 
 #modal img {
-  max-width: 95%;
-  max-height: 85%;
+  width: auto;
+  height: auto;
+
+  max-width: 100%;
+  max-height: 100dvh; /* 🔥 también aquí */
+
   object-fit: contain;
 }
+
+body.modal-open {
+  overflow: hidden;
+}
+
 #closeModal {
   position: absolute;
   top: 20px;
