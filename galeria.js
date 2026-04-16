@@ -56,24 +56,25 @@ function openModal(index) {
   const modal = document.getElementById("modal");
   const modalImg = document.getElementById("modal-img");
 
-  if (!modal || !modalImg) {
-    console.error("Modal o imagen no encontrados");
-    return;
-  }
+  console.log("URL imagen:", images[currentIndex]); // DEBUG IMPORTANTE
+
+  if (!modal || !modalImg) return;
 
   modal.classList.remove("hidden");
-  modalImg.src = images[currentIndex];
+
+  const url =
+    typeof images[currentIndex] === "string"
+      ? images[currentIndex]
+      : images[currentIndex]?.url;
+
+  modalImg.src = url;
+
+  modalImg.style.display = "block";
+  modalImg.style.opacity = "1";
+  modalImg.style.maxWidth = "90%";
+  modalImg.style.maxHeight = "90%";
 
   document.body.classList.add("modal-open");
-}
-
-function closeModal() {
-  const modal = document.getElementById("modal");
-
-  if (!modal) return;
-
-  modal.classList.add("hidden");
-  document.body.classList.remove("modal-open");
 }
 
 // click fuera del modal
