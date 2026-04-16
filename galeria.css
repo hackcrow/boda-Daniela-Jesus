@@ -113,7 +113,9 @@ body.loaded {
 }
 
 body.modal-open {
-  overflow: hidden;
+  /*overflow: hidden;*/
+  overflow: auto !important;
+  background: #fff !important;
 }
 
 #closeModal {
