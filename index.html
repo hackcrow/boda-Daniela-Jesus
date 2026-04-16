@@ -1,112 +1,141 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 
-<title>Fotos Boda Jesus y Daniela 📸</title>
+const cloudName = "dazidfv1m";
+const uploadPreset = "fiesta-mia";
+const folder = "bodaDanielaJesus";
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: linear-gradient(135deg, #f1f1f1, #e0e4d7, #d6dcc5);
-  color: #333;
-  text-align: center;
+let loadedImages = new Set();
+let isFirstLoad = true;
+window.audioEnabled = false;
+
+// 🔊 activar audio
+document.addEventListener("click", () => {
+  window.audioEnabled = true;
+}, { once: true });
+
+// ================= MODAL =================
+function openModal(url) {
+  const modal = document.getElementById("modal");
+  const modalImg = document.getElementById("modalImg");
+
+  modal.style.display = "flex";
+  modalImg.src = url;
 }
 
-h1 {
-  color: #2f3e2f;
+// ================= ANIMACIÓN =================
+function addImageAnimated(url) {
+  const img = document.createElement("img");
+  img.src = url;
+
+  img.classList.add("new-photo");
+
+  img.onclick = () => openModal(url);
+
+  // 🔥 SIEMPRE ARRIBA
+  document.getElementById("gallery").prepend(img);
+
+  setTimeout(() => {
+    img.classList.remove("new-photo");
+  }, 700);
+
+  if (window.audioEnabled) {
+    new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3").play();
+  }
 }
 
-button {
-  margin: 10px;
-  padding: 14px 25px;
-  border-radius: 30px;
-  border: none;
-  background: linear-gradient(45deg, #6c6e59, #4CAF50);
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
+// ================= LOAD =================
+async function loadImages() {
+  const res = await fetch(API_URL + "?t=" + Date.now());
+  const data = await res.json();
+
+  const gallery = document.getElementById("gallery");
+
+  // 🔥 ordenar: más nuevas primero
+  const ordered = [...data].reverse();
+
+  // primera carga
+  if (isFirstLoad) {
+    gallery.innerHTML = "";
+    loadedImages.clear();
+
+    ordered.forEach(url => {
+      loadedImages.add(url);
+
+      const img = document.createElement("img");
+      img.src = url;
+      img.onclick = () => openModal(url);
+
+      // 🔥 usar prepend para consistencia
+      gallery.appendChild(img);
+    });
+
+    isFirstLoad = false;
+    return;
+  }
+
+  // nuevas
+  ordered.forEach(url => {
+    if (!loadedImages.has(url)) {
+      loadedImages.add(url);
+      addImageAnimated(url);
+    }
+  });
 }
 
-#preview {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+// ================= UPLOAD =================
+async function uploadToCloudinary(file) {
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+  formData.append("folder", folder);
+
+  const res = await fetch(url, {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await res.json();
+
+  // 🔥 aparece arriba inmediatamente
+  addImageAnimated(data.secure_url);
+
+  await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url: data.secure_url })
+  });
 }
 
-#gallery {
-  column-count: 2;
-  column-gap: 8px;
-  padding: 10px;
-}
+// ================= INIT =================
+document.addEventListener("DOMContentLoaded", () => {
 
-@media (min-width: 600px) {
-  #gallery { column-count: 3; }
-}
+  const fileInput = document.getElementById("fileInput");
+  const uploadBtn = document.getElementById("uploadBtn");
 
-@media (min-width: 900px) {
-  #gallery { column-count: 5; }
-}
+  uploadBtn.onclick = () => fileInput.click();
 
-#gallery img {
-  width: 100%;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  break-inside: avoid;
-  cursor: pointer;
-}
+  fileInput.addEventListener("change", async (e) => {
+    const files = Array.from(e.target.files);
 
-/* 🔥 MODAL */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 9999;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.9);
-  justify-content: center;
-  align-items: center;
-}
+    await Promise.all(files.map(uploadToCloudinary));
 
-.modal img {
-  max-width: 95%;
-  max-height: 90%;
-  border-radius: 12px;
-}
+    fileInput.value = "";
+  });
 
-#closeModal {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  font-size: 35px;
-  color: white;
-  cursor: pointer;
-}
-</style>
-</head>
+  // cerrar modal
+  const modal = document.getElementById("modal");
+  const closeModal = document.getElementById("closeModal");
 
-<body>
+  closeModal.onclick = () => modal.style.display = "none";
 
-<h1>Fotos Boda Jesus y Daniela 📸</h1>
-<!--
-<input type="file" id="fileInput" multiple accept="image/*" style="display:none">
-<button id="uploadBtn">📸 Comparte tus fotos 🤗</button>
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  };
 
-<div id="preview"></div>
-<div id="gallery"></div>
+  loadImages();
+});
 
-<!-- 🔥 MODAL -->
-  <!--
-<div id="modal" class="modal">
-  <span id="closeModal">&times;</span>
-  <img id="modalImg">
-</div>
-
-<script src="app.js"></script>
--->
-</body>
-</html>
+// 🔄 auto refresh
+setInterval(loadImages, 3000);
