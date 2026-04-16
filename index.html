@@ -6,8 +6,6 @@
 
 <title>Fotos Boda Jesus y Daniela 📸</title>
 
-<script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
-
 <style>
 body {
   margin: 0;
@@ -17,13 +15,8 @@ body {
   text-align: center;
 }
 
-.container {
-  padding: 20px;
-}
-
 h1 {
-  font-size: 28px;
-  margin-top: 20px;
+  color: #2f3e2f;
 }
 
 button {
@@ -35,12 +28,12 @@ button {
   color: white;
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px #4CAF50;
+#preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 #gallery {
@@ -62,54 +55,14 @@ button:hover {
   margin-bottom: 8px;
   border-radius: 12px;
   break-inside: avoid;
+  cursor: pointer;
 }
 
-@media (min-width: 600px) {
-  #gallery { grid-template-columns: repeat(3, 1fr); }
-}
-
-@media (min-width: 900px) {
-  #gallery { grid-template-columns: repeat(5, 1fr); }
-}
-
-img {
-  width: 100%;
-  border-radius: 12px;
-  transition: 0.3s;
-}
-
-img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px #ff00cc;
-}
-
-.btn-clear {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: red;
-  padding: 10px;
-  border-radius: 10px;
-}
-
-#preview {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  padding: 10px;
-}
-
-img {
-  width: 100%;
-  border-radius: 12px;
-  transition: all 0.4s ease;
-}
-
+/* 🔥 MODAL */
 .modal {
   display: none;
   position: fixed;
   z-index: 9999;
-  padding: 20px;
   top: 0;
   left: 0;
   width: 100%;
@@ -138,21 +91,19 @@ img {
 
 <body>
 
-<div class="container">
-  <h1>Fotos Boda Jesus y Daniela 📸</h1>
+<h1>Fotos Boda Jesus y Daniela 📸</h1>
 
-  <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+<input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+<button id="uploadBtn">📸 Comparte tus fotos 🤗</button>
 
-  <button id="uploadBtn">📸 Comparte tus fotos 🤗</button>
-</div>
+<div id="preview"></div>
+<div id="gallery"></div>
 
+<!-- 🔥 MODAL -->
 <div id="modal" class="modal">
   <span id="closeModal">&times;</span>
   <img id="modalImg">
 </div>
-  
-<div id="preview" style="display:flex;flex-wrap:wrap;justify-content:center;"></div>
-<div id="gallery"></div>
 
 <script src="app.js"></script>
 
