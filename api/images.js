@@ -20,10 +20,8 @@ export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    // 🔥 ANTI-CACHE GLOBAL (CLAVE)
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
+    // 🔥 Anti-cache (solo en respuesta, esto sí es correcto)
+    res.setHeader("Cache-Control", "no-store");
 
     if (req.method === "OPTIONS") {
       return res.status(200).end();
@@ -32,7 +30,6 @@ export default async function handler(req, res) {
     // ================= GET =================
     if (req.method === "GET") {
       const images = await redis.lrange(KEY, 0, -1);
-
       return res.status(200).json(images || []);
     }
 
