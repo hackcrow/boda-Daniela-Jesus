@@ -26,7 +26,13 @@ body {
   font-family: 'Great Vibes', cursive;
   font-size: 28px;
   color: #6b705c;
-  margin-top: 12px;
+  margin-top: 20px;
+}
+
+@media (min-width: 600px) {
+  .hero-text {
+    margin-top: 28px;
+  }
 }
 
 /* GALERIA */
