@@ -32,15 +32,15 @@ async function loadImages() {
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
 
-    images = data;
-
     const gallery = document.getElementById("gallery");
 
+    // 🔥 SOLO primeras 20 (más recientes)
+    const latest = data.slice(0, 20);
+
+    // 🔥 PRIMERA CARGA (sin animación)
     if (isFirstLoad) {
       gallery.innerHTML = "";
       loadedImages.clear();
-
-      const latest = data.slice(0, 20);
 
       latest.forEach((url, index) => {
         loadedImages.add(url);
@@ -49,14 +49,15 @@ async function loadImages() {
         img.src = url;
         img.onclick = () => openModal(index);
 
-        gallery.appendChild(img);
+        gallery.appendChild(img); // orden correcto
       });
 
       isFirstLoad = false;
       return;
     }
 
-    data.forEach((url, index) => {
+    // 🔥 SOLO NUEVAS (sin borrar nada)
+    latest.forEach((url, index) => {
       if (!loadedImages.has(url)) {
         loadedImages.add(url);
 
@@ -65,10 +66,11 @@ async function loadImages() {
         img.classList.add("new-photo");
         img.onclick = () => openModal(index);
 
-        gallery.prepend(img);
+        gallery.prepend(img); // 🔥 nuevas arriba
 
         setTimeout(() => img.classList.remove("new-photo"), 500);
 
+        // 🔥 mantener máximo 20
         while (gallery.children.length > 20) {
           const last = gallery.lastChild;
           loadedImages.delete(last.src);
