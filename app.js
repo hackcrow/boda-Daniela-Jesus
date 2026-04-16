@@ -5,10 +5,12 @@ const cloudName = "dazidfv1m";
 const uploadPreset = "fiesta-mia";
 const folder = "bodaDanielaJesus";
 
-// Ajusta según el evento/red
-const MAX_CONCURRENT_UPLOADS = 3;   // 🔥 3–4 recomendado
-const RETRIES = 2;                  // reintentos por archivo
-const TIMEOUT_MS = 30000;           // 30s por subida
+const MAX_CONCURRENT_UPLOADS = 3;
+const RETRIES = 2;
+const TIMEOUT_MS = 30000;
+
+let loadedImages = new Set();
+window.audioEnabled = false;
 
 // ================= UTILS =================
 function delay(ms) {
@@ -18,9 +20,9 @@ function delay(ms) {
 async function fetchWithTimeout(url, options = {}, timeout = TIMEOUT_MS) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
+
   try {
-    const res = await fetch(url, { ...options, signal: controller.signal });
-    return res;
+    return await fetch(url, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(id);
   }
@@ -31,7 +33,9 @@ async function saveImage(url) {
   try {
     await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ url })
     });
   } catch (e) {
@@ -41,16 +45,18 @@ async function saveImage(url) {
 
 async function loadImages() {
   try {
-    // evita caché
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
 
-    const gallery = document.getElementById("gallery");
-    gallery.innerHTML = "";
+    data.forEach(url => {
+      if (!loadedImages.has(url)) {
+        loadedImages.add(url);
+        addImageAnimated(url);
+      }
+    });
 
-    data.forEach(url => addImage(url));
-  } catch (e) {
-    console.log("Error cargando:", e);
+  } catch (error) {
+    console.log("Error cargando:", error);
   }
 }
 
@@ -61,6 +67,39 @@ function addImage(url) {
   document.getElementById("gallery").prepend(img);
 }
 
+// 🔥 ANIMACIÓN + SONIDO
+function addImageAnimated(url) {
+  const img = document.createElement("img");
+  img.src = url;
+
+  img.style.opacity = "0";
+  img.style.transform = "scale(0.8) translateY(20px)";
+
+  document.getElementById("gallery").prepend(img);
+
+  setTimeout(() => {
+    img.style.transition = "all 0.5s ease";
+    img.style.opacity = "1";
+    img.style.transform = "scale(1) translateY(0)";
+
+    img.style.boxShadow = "0 0 20px #00ffcc";
+
+    setTimeout(() => {
+      img.style.boxShadow = "none";
+    }, 1000);
+
+  }, 50);
+
+  // 🔊 sonido (solo si ya hubo interacción)
+  if (window.audioEnabled) {
+    try {
+      const audio = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+      audio.play();
+    } catch (e) {}
+  }
+}
+
+// ================= PREVIEW =================
 function createPreviewItem(file) {
   const wrapper = document.createElement("div");
   wrapper.style.position = "relative";
@@ -79,7 +118,6 @@ function createPreviewItem(file) {
   bar.style.height = "4px";
   bar.style.width = "0%";
   bar.style.background = "#00ffcc";
-  bar.style.borderRadius = "4px";
 
   const label = document.createElement("div");
   label.style.position = "absolute";
@@ -90,8 +128,6 @@ function createPreviewItem(file) {
   label.style.background = "rgba(0,0,0,0.6)";
   label.style.color = "#fff";
   label.style.padding = "2px 4px";
-  label.style.borderTopLeftRadius = "8px";
-  label.style.borderTopRightRadius = "8px";
   label.innerText = "En cola";
 
   wrapper.appendChild(img);
@@ -119,57 +155,51 @@ async function uploadToCloudinary(file, ui, attempt = 0) {
       body: formData
     });
 
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.ok) throw new Error("Error");
 
     const data = await res.json();
-
-    if (!data.secure_url) throw new Error("No secure_url");
 
     ui.bar.style.width = "100%";
     ui.label.innerText = "Listo ✔";
 
     const imageUrl = data.secure_url;
 
-    // UI inmediata
     addImage(imageUrl);
-
-    // persistencia
     await saveImage(imageUrl);
 
     return imageUrl;
 
   } catch (err) {
-    console.log("Error subiendo:", file.name, err);
-
     if (attempt < RETRIES) {
-      ui.label.innerText = `Reintentando (${attempt + 1})…`;
-      await delay(800 * (attempt + 1)); // backoff simple
+      ui.label.innerText = "Reintentando…";
+      await delay(1000);
       return uploadToCloudinary(file, ui, attempt + 1);
     } else {
       ui.label.innerText = "Error ❌";
-      ui.bar.style.background = "#ff4d4d";
-      throw err;
     }
   }
 }
 
-// ================= CONCURRENCIA (BATCHES) =================
-async function uploadInBatches(files, uiItems, batchSize = MAX_CONCURRENT_UPLOADS) {
-  for (let i = 0; i < files.length; i += batchSize) {
-    const batchFiles = files.slice(i, i + batchSize);
-    const batchUI = uiItems.slice(i, i + batchSize);
-
-    // marca en cola
-    batchUI.forEach(ui => ui.label.innerText = "En cola…");
+// ================= BATCHES =================
+async function uploadInBatches(files, uiItems) {
+  for (let i = 0; i < files.length; i += MAX_CONCURRENT_UPLOADS) {
+    const batch = files.slice(i, i + MAX_CONCURRENT_UPLOADS);
+    const batchUI = uiItems.slice(i, i + MAX_CONCURRENT_UPLOADS);
 
     await Promise.all(
-      batchFiles.map((file, idx) => uploadToCloudinary(file, batchUI[idx]))
+      batch.map((file, i) => uploadToCloudinary(file, batchUI[i]))
     );
   }
 }
 
 // ================= INIT =================
 document.addEventListener("DOMContentLoaded", () => {
+
+  // 🔊 activar audio en primer click
+  document.addEventListener("click", () => {
+    window.audioEnabled = true;
+  }, { once: true });
+
   const fileInput = document.getElementById("fileInput");
   const uploadBtn = document.getElementById("uploadBtn");
   const preview = document.getElementById("preview");
@@ -177,31 +207,26 @@ document.addEventListener("DOMContentLoaded", () => {
   uploadBtn.addEventListener("click", () => fileInput.click());
 
   fileInput.addEventListener("change", async (e) => {
+
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
     preview.innerHTML = "";
 
-    // crear preview + refs UI
     const uiItems = files.map(file => {
       const ui = createPreviewItem(file);
       preview.appendChild(ui.wrapper);
       return ui;
     });
 
-    // 🔥 subida en paralelo controlado
-    await uploadInBatches(files, uiItems, MAX_CONCURRENT_UPLOADS);
+    await uploadInBatches(files, uiItems);
 
-    // limpia input
     fileInput.value = "";
-
-    // sincroniza feed
-    await loadImages();
+    loadImages();
   });
 
-  // carga inicial
   loadImages();
 });
 
-// 🔄 auto-refresh (suave)
+// 🔄 AUTO REFRESH
 setInterval(loadImages, 3000);
