@@ -32,6 +32,8 @@ async function loadImages() {
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
 
+    images = data; // 🔥 FIX CRÍTICO
+    
     const gallery = document.getElementById("gallery");
 
     // 🔥 SOLO primeras 20 (más recientes)
@@ -92,22 +94,19 @@ function openModal(index) {
   const modal = document.getElementById("modal");
   const modalImg = document.getElementById("modalImg");
 
+  const imgData = images[index];
+
+  const url =
+    typeof imgData === "string"
+      ? imgData
+      : imgData?.url;
+
   modal.classList.add("active");
-  modalImg.src = images[index];
+
+  modalImg.src = url;
 
   document.body.classList.add("modal-open");
 }
-
-function closeModal() {
-  document.getElementById("modal").classList.remove("active");
-  document.body.classList.remove("modal-open");
-}
-
-document.getElementById("closeModal").onclick = closeModal;
-
-document.getElementById("modal").onclick = (e) => {
-  if (e.target.id === "modal") closeModal();
-};
 
 // ================= SWIPE =================
 
