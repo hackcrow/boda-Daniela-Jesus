@@ -30,86 +30,95 @@ function addImageAnimated(url) {
   img.classList.add("new-photo");
   img.onclick = () => openModal(url);
 
-  // 🔥 siempre arriba
   document.getElementById("gallery").prepend(img);
 
-  setTimeout(() => {
-    img.classList.remove("new-photo");
-  }, 700);
-
-  if (window.audioEnabled) {
-    new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3").play();
-  }
+  setTimeout(() => img.classList.remove("new-photo"), 700);
 }
 
 // ================= LOAD =================
 async function loadImages() {
-  try {
-    const res = await fetch(API_URL + "?t=" + Date.now()); // 🔥 evita cache
-    const data = await res.json();
+  const res = await fetch(API_URL + "?t=" + Date.now());
+  const data = await res.json();
 
-    const gallery = document.getElementById("gallery");
+  const gallery = document.getElementById("gallery");
 
-    if (isFirstLoad) {
-      gallery.innerHTML = "";
-      loadedImages.clear();
+  // 🔥 SOLO 20 MÁS RECIENTES
+  const latest = data.slice(0, 20);
 
-      // 🔥 pintar como viene (LPUSH ya ordena)
-      data.forEach(url => {
-        loadedImages.add(url);
+  if (isFirstLoad) {
+    gallery.innerHTML = "";
+    loadedImages.clear();
 
-        const img = document.createElement("img");
-        img.src = url;
-        img.onclick = () => openModal(url);
+    latest.forEach(url => {
+      loadedImages.add(url);
 
-        gallery.appendChild(img);
-      });
+      const img = document.createElement("img");
+      img.src = url;
+      img.onclick = () => openModal(url);
 
-      isFirstLoad = false;
-      return;
+      gallery.appendChild(img);
+    });
+
+    isFirstLoad = false;
+    return;
+  }
+
+  latest.forEach(url => {
+    if (!loadedImages.has(url)) {
+      loadedImages.add(url);
+      addImageAnimated(url);
     }
+  });
+}
 
-    // 🔥 solo nuevas
-    data.forEach(url => {
-      if (!loadedImages.has(url)) {
-        loadedImages.add(url);
-        addImageAnimated(url);
+// ================= UPLOAD CON PROGRESO =================
+async function uploadToCloudinary(file) {
+  return new Promise((resolve, reject) => {
+
+    const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    const xhr = new XMLHttpRequest();
+
+    const progressBar = document.getElementById("progressBar");
+    progressBar.style.display = "block";
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        const percent = (e.loaded / e.total) * 100;
+        progressBar.style.width = percent + "%";
       }
     });
 
-  } catch (error) {
-    console.log("Error cargando imágenes:", error);
-  }
-}
+    xhr.onreadystatechange = async () => {
+      if (xhr.readyState === 4) {
+        progressBar.style.width = "0%";
+        progressBar.style.display = "none";
 
-// ================= UPLOAD =================
-async function uploadToCloudinary(file) {
-  const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText);
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-  formData.append("folder", folder);
+          addImageAnimated(data.secure_url);
 
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      body: formData
-    });
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: data.secure_url })
+          });
 
-    const data = await res.json();
+          resolve();
+        } else {
+          reject();
+        }
+      }
+    };
 
-    addImageAnimated(data.secure_url);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    formData.append("folder", folder);
 
-    await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: data.secure_url })
-    });
-
-  } catch (error) {
-    console.log("Error subiendo:", error);
-  }
+    xhr.open("POST", url);
+    xhr.send(formData);
+  });
 }
 
 // ================= INIT =================
@@ -122,24 +131,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fileInput.addEventListener("change", async (e) => {
     const files = Array.from(e.target.files);
-
     await Promise.all(files.map(uploadToCloudinary));
-
     fileInput.value = "";
   });
-
-  // cerrar modal
-  const modal = document.getElementById("modal");
-  const closeModal = document.getElementById("closeModal");
-
-  closeModal.onclick = () => modal.style.display = "none";
-
-  modal.onclick = (e) => {
-    if (e.target === modal) modal.style.display = "none";
-  };
 
   loadImages();
 });
 
-// 🔄 auto refresh
 setInterval(loadImages, 3000);
