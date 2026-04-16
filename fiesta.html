@@ -4,55 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fotos Boda Jesus y Daniela</title>
+<title>Fotos Boda 📸</title>
 
-<link rel="stylesheet" href="index.css?v=1">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./index.css?v=1">
 
 </head>
 
 <body>
 
-<!-- PORTADA -->
-<div class="hero">
-  <img src="https://codeno.com.mx/nuestra_boda_corregida.png" alt="Nuestra boda">
+<div class="top-section">
+
+  <div class="hero">
+    <img src="https://codeno.com.mx/nuestra_boda_corregida.png">
+  </div>
+
+  <div class="btn-wrapper">
+    <button id="uploadBtn" class="btn">Comparte tus fotos</button>
+  </div>
+
+  <div class="btn-wrapper">
+    <a href="galeria.html?v=2" class="btn">Ir a Galería</a>
+  </div>
+
 </div>
 
-<!-- INPUT -->
-<input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+<input type="file" id="fileInput" multiple accept="image/*" hidden>
 
-<!-- BOTONES -->
-<button id="uploadBtn">Comparte tus fotos</button>
-
-<a href="galeria.html" class="btn-galeria">Ir a Galeria</a>
-
-<!-- PROGRESO -->
-<div id="progressContainer">
-  <div id="progressBar"></div>
-</div>
-
-<!-- GALERIA -->
 <div id="gallery"></div>
 
-<!-- MODAL -->
-<div id="modal" class="modal">
+<!-- 🔥 MODAL -->
+<div id="modal">
   <span id="closeModal">&times;</span>
   <img id="modalImg">
 </div>
 
-<script src="app.js?v=6"></script>
-
-<script>
-// cerrar modal
-document.getElementById("closeModal").onclick = () => {
-  document.getElementById("modal").style.display = "none";
-};
-
-document.getElementById("modal").onclick = (e) => {
-  if (e.target.id === "modal") {
-    document.getElementById("modal").style.display = "none";
-  }
-};
-</script>
+<script src="./index.js?v=1"></script>
 
 </body>
 </html>
