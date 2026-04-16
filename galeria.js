@@ -19,7 +19,7 @@ async function loadImages() {
       throw new Error("API falló: " + res.status);
     }
 
-    images = await res.json(); // 🔥 FIX: NO redeclarar con const
+    images = await res.json();
 
     const gallery = document.getElementById("gallery");
 
@@ -34,7 +34,7 @@ async function loadImages() {
       const img = document.createElement("img");
       img.src = url;
 
-      // 🔥 FIX CLAVE: CLICK ABRE MODAL
+      // 🔥 CLICK PARA ABRIR MODAL (CLAVE)
       img.addEventListener("click", () => {
         openModal(index);
       });
@@ -54,14 +54,14 @@ function openModal(index) {
   currentIndex = index;
 
   const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modal-img"); // 👈 FIX ID
+  const modalImg = document.getElementById("modal-img");
 
   if (!modal || !modalImg) {
     console.error("Modal o imagen no encontrados");
     return;
   }
 
-  modal.classList.remove("hidden"); // 👈 FIX VISIBILIDAD
+  modal.classList.remove("hidden");
   modalImg.src = images[currentIndex];
 
   document.body.classList.add("modal-open");
@@ -76,14 +76,14 @@ function closeModal() {
   document.body.classList.remove("modal-open");
 }
 
-// click fuera de imagen
+// click fuera del modal
 window.addEventListener("click", (e) => {
   const modal = document.getElementById("modal");
   if (e.target === modal) closeModal();
 });
 
 // =====================
-// SWIPE (seguro)
+// SWIPE
 // =====================
 let startX = 0;
 
@@ -92,9 +92,9 @@ document.addEventListener("touchstart", (e) => {
 });
 
 document.addEventListener("touchend", (e) => {
-  if (!document.getElementById("modal") || document.getElementById("modal").classList.contains("hidden")) {
-    return;
-  }
+  const modal = document.getElementById("modal");
+
+  if (!modal || modal.classList.contains("hidden")) return;
 
   let diff = startX - e.changedTouches[0].clientX;
 
@@ -111,7 +111,7 @@ document.addEventListener("touchend", (e) => {
 });
 
 // =====================
-// BOTÓN TOP (SAFE)
+// BOTÓN TOP
 // =====================
 const topBtn = document.getElementById("topBtn");
 
@@ -126,7 +126,7 @@ if (topBtn) {
 }
 
 // =====================
-// BOTÓN DESCARGA (SAFE)
+// DESCARGA
 // =====================
 const downloadBtn = document.getElementById("downloadBtn");
 
