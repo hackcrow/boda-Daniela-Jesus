@@ -8,11 +8,11 @@ window.addEventListener("load", () => {
   document.body.classList.add("loaded");
 });
 
-console.log("GALERÍA INICIANDO...");
+//console.log("GALERÍA INICIANDO...");
 
 async function loadImages() {
   try {
-    console.log("Cargando imágenes...");
+    //console.log("Cargando imágenes...");
 
     const res = await fetch(API_URL);
 
@@ -21,7 +21,7 @@ async function loadImages() {
     }
 
     const images = await res.json();
-    console.log("IMÁGENES:", images);
+    //console.log("IMÁGENES:", images);
 
     const gallery = document.getElementById("gallery");
 
