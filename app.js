@@ -101,6 +101,7 @@ async function uploadToCloudinary(file) {
   const data = await res.json();
 
   addImageAnimated(data.secure_url);
+  lanzarConfeti();
 
   await fetch(API_URL, {
     method: "POST",
@@ -124,6 +125,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     fileInput.value = "";
   });
+
+  function lanzarConfeti() {
+    confetti({
+      particleCount: 120,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  }
 
   // cerrar modal
   const modal = document.getElementById("modal");
