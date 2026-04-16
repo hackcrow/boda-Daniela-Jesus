@@ -150,6 +150,30 @@ button {
     filter: blur(0);
   }
 }
+
+/* 🔥 animación nueva */
+.new-photo {
+  animation: fadeInScale 0.5s ease;
+}
+
+/* 🔥 animación desplazamiento */
+#gallery img {
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+/* entrada */
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
 </style>
 
 </head>
