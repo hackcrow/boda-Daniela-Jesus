@@ -8,20 +8,18 @@ window.addEventListener("load", () => {
   document.body.classList.add("loaded");
 });
 
-//console.log("GALERÍA INICIANDO...");
-
+// =====================
+// LOAD IMAGES
+// =====================
 async function loadImages() {
   try {
-    //console.log("Cargando imágenes...");
-
     const res = await fetch(API_URL);
 
     if (!res.ok) {
       throw new Error("API falló: " + res.status);
     }
 
-    const images = await res.json();
-    //console.log("IMÁGENES:", images);
+    images = await res.json(); // 🔥 FIX: NO redeclarar con const
 
     const gallery = document.getElementById("gallery");
 
@@ -32,9 +30,15 @@ async function loadImages() {
 
     gallery.innerHTML = "";
 
-    images.forEach((url) => {
+    images.forEach((url, index) => {
       const img = document.createElement("img");
       img.src = url;
+
+      // 🔥 FIX CLAVE: CLICK ABRE MODAL
+      img.addEventListener("click", () => {
+        openModal(index);
+      });
+
       gallery.appendChild(img);
     });
 
@@ -43,41 +47,55 @@ async function loadImages() {
   }
 }
 
+// =====================
 // MODAL
+// =====================
 function openModal(index) {
   currentIndex = index;
 
   const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modalImg");
+  const modalImg = document.getElementById("modal-img");
 
-  modal.classList.add("active");
-  modalImg.src = images[index];
+  if (!modal || !modalImg) {
+    console.error("Modal no encontrado");
+    return;
+  }
+
+  modal.classList.remove("hidden");
+  modalImg.src = images[currentIndex];
 
   document.body.classList.add("modal-open");
 }
 
-// CLOSE
 function closeModal() {
-  document.getElementById("modal").classList.remove("active");
+  const modal = document.getElementById("modal");
+
+  if (!modal) return;
+
+  modal.classList.add("hidden");
   document.body.classList.remove("modal-open");
 }
 
-document.getElementById("closeModal").onclick = closeModal;
+// click fuera de imagen
+window.addEventListener("click", (e) => {
+  const modal = document.getElementById("modal");
+  if (e.target === modal) closeModal();
+});
 
-document.getElementById("modal").onclick = (e) => {
-  if (e.target.id === "modal") closeModal();
-};
-
-// SWIPE
+// =====================
+// SWIPE (seguro)
+// =====================
 let startX = 0;
 
-const modal = document.getElementById("modal");
-
-modal.addEventListener("touchstart", (e) => {
+document.addEventListener("touchstart", (e) => {
   startX = e.touches[0].clientX;
 });
 
-modal.addEventListener("touchend", (e) => {
+document.addEventListener("touchend", (e) => {
+  if (!document.getElementById("modal") || document.getElementById("modal").classList.contains("hidden")) {
+    return;
+  }
+
   let diff = startX - e.changedTouches[0].clientX;
 
   if (diff > 50) currentIndex++;
@@ -86,47 +104,51 @@ modal.addEventListener("touchend", (e) => {
   if (currentIndex < 0) currentIndex = images.length - 1;
   if (currentIndex >= images.length) currentIndex = 0;
 
-  document.getElementById("modalImg").src = images[currentIndex];
+  const modalImg = document.getElementById("modal-img");
+  if (modalImg) {
+    modalImg.src = images[currentIndex];
+  }
 });
 
-// BOTÓN TOP
+// =====================
+// BOTÓN TOP (SAFE)
+// =====================
 const topBtn = document.getElementById("topBtn");
 
-window.addEventListener("scroll", () => {
-  topBtn.style.display = window.scrollY > 300 ? "block" : "none";
-});
-
-topBtn.onclick = () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
-
-// 🔐 BOTÓN SECRETO
-let keys = [];
-
-document.addEventListener("keydown", (e) => {
-  keys.push(e.key.toLowerCase());
-
-  if (keys.slice(-3).join("") === "dj9") {
-    document.getElementById("downloadBtn").style.display = "block";
-  }
-});
-
-// 📥 DESCARGA
-document.getElementById("downloadBtn").onclick = () => {
-  const pass = prompt("Ingresa contraseña:");
-
-  if (pass !== "boda123") {
-    alert("Contraseña incorrecta");
-    return;
-  }
-
-  images.forEach((url, i) => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `foto_${i}.jpg`;
-    a.click();
+if (topBtn) {
+  window.addEventListener("scroll", () => {
+    topBtn.style.display = window.scrollY > 300 ? "block" : "none";
   });
-};
+
+  topBtn.onclick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+}
+
+// =====================
+// BOTÓN DESCARGA (SAFE)
+// =====================
+const downloadBtn = document.getElementById("downloadBtn");
+
+if (downloadBtn) {
+  downloadBtn.onclick = () => {
+    const pass = prompt("Ingresa contraseña:");
+
+    if (pass !== "boda123") {
+      alert("Contraseña incorrecta");
+      return;
+    }
+
+    images.forEach((url, i) => {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `foto_${i + 1}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  };
+}
 
 // INIT
 loadImages();
