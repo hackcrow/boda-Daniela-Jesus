@@ -5,13 +5,11 @@ let currentIndex = 0;
 
 // ================= INIT / RESET =================
 
-// 🔥 carga normal
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
   resetModalState();
 });
 
-// 🔥 evita bug al regresar desde otra página (bfcache)
 window.addEventListener("pageshow", () => {
   resetModalState();
 });
@@ -32,9 +30,7 @@ async function loadImages() {
   try {
     const res = await fetch(API_URL + "?t=" + Date.now());
 
-    if (!res.ok) {
-      throw new Error("Error API: " + res.status);
-    }
+    if (!res.ok) throw new Error("Error API: " + res.status);
 
     images = await res.json();
 
@@ -44,7 +40,9 @@ async function loadImages() {
     images.forEach((url, index) => {
       const img = document.createElement("img");
       img.src = url;
+
       img.onclick = () => openModal(index);
+
       gallery.appendChild(img);
     });
 
@@ -61,6 +59,8 @@ function openModal(index) {
   const modal = document.getElementById("modal");
   const modalImg = document.getElementById("modalImg");
 
+  if (!modal || !modalImg) return;
+
   modal.classList.add("active");
   modalImg.src = images[index];
 
@@ -70,6 +70,8 @@ function openModal(index) {
 function closeModal() {
   const modal = document.getElementById("modal");
 
+  if (!modal) return;
+
   modal.classList.remove("active");
   document.body.classList.remove("modal-open");
 }
@@ -77,7 +79,7 @@ function closeModal() {
 // cerrar con X
 document.getElementById("closeModal").onclick = closeModal;
 
-// cerrar tocando fondo
+// cerrar clic en fondo
 document.getElementById("modal").onclick = (e) => {
   if (e.target.id === "modal") closeModal();
 };
@@ -104,52 +106,42 @@ modal.addEventListener("touchend", (e) => {
   document.getElementById("modalImg").src = images[currentIndex];
 });
 
-// ================= TECLADO =================
-
-document.addEventListener("keydown", (e) => {
-  const modal = document.getElementById("modal");
-
-  if (!modal.classList.contains("active")) return;
-
-  if (e.key === "ArrowRight") {
-    currentIndex = (currentIndex + 1) % images.length;
-  }
-
-  if (e.key === "ArrowLeft") {
-    currentIndex = (currentIndex - 1 + images.length) % images.length;
-  }
-
-  document.getElementById("modalImg").src = images[currentIndex];
-});
-
-// ================= BOTÓN TOP =================
-
-const topBtn = document.getElementById("topBtn");
-
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) {
-    topBtn.style.display = "block";
-  } else {
-    topBtn.style.display = "none";
-  }
-});
-
-topBtn.onclick = () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
-
-// ================= BOTÓN SECRETO =================
+// ================= TECLAS (TOGGLE BOTÓN) =================
 
 let keys = [];
 
 document.addEventListener("keydown", (e) => {
   keys.push(e.key.toLowerCase());
 
-  // 🔥 combo secreto
-  if (keys.slice(-3).join("") === "dj9") {
-    document.getElementById("downloadBtn").style.display = "block";
+  if (keys.length > 3) keys.shift();
+
+  const combo = keys.join("");
+  const btn = document.getElementById("downloadBtn");
+
+  if (!btn) return;
+
+  if (combo === "dj9") {
+    btn.style.display = "block";
+  }
+
+  if (combo === "dj0") {
+    btn.style.display = "none";
   }
 });
+
+// ================= BOTÓN TOP =================
+
+const topBtn = document.getElementById("topBtn");
+
+if (topBtn) {
+  window.addEventListener("scroll", () => {
+    topBtn.style.display = window.scrollY > 300 ? "block" : "none";
+  });
+
+  topBtn.onclick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+}
 
 // ================= DESCARGA =================
 
@@ -165,7 +157,9 @@ document.getElementById("downloadBtn").onclick = () => {
     const a = document.createElement("a");
     a.href = url;
     a.download = `foto_${i}.jpg`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
   });
 };
 
