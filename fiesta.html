@@ -100,6 +100,28 @@ button {
   border-radius: 15px;
   box-shadow: 0 0 20px rgba(255,255,255,0.2);
 }
+
+/* 🔥 animación foto nueva */
+.new-photo {
+  animation: fotoNueva 0.6s ease;
+}
+
+@keyframes fotoNueva {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+    filter: blur(10px);
+  }
+  60% {
+    transform: scale(1.05);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
