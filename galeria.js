@@ -3,15 +3,39 @@ const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 let images = [];
 let currentIndex = 0;
 
-// FADE
+// ================= INIT / RESET =================
+
+// 🔥 carga normal
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
+  resetModalState();
 });
 
-// LOAD
+// 🔥 evita bug al regresar desde otra página (bfcache)
+window.addEventListener("pageshow", () => {
+  resetModalState();
+});
+
+function resetModalState() {
+  const modal = document.getElementById("modal");
+
+  if (modal) {
+    modal.classList.remove("active");
+  }
+
+  document.body.classList.remove("modal-open");
+}
+
+// ================= LOAD IMAGES =================
+
 async function loadImages() {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL + "?t=" + Date.now());
+
+    if (!res.ok) {
+      throw new Error("Error API: " + res.status);
+    }
+
     images = await res.json();
 
     const gallery = document.getElementById("gallery");
@@ -29,7 +53,8 @@ async function loadImages() {
   }
 }
 
-// MODAL
+// ================= MODAL =================
+
 function openModal(index) {
   currentIndex = index;
 
@@ -42,19 +67,23 @@ function openModal(index) {
   document.body.classList.add("modal-open");
 }
 
-// CLOSE
 function closeModal() {
-  document.getElementById("modal").classList.remove("active");
+  const modal = document.getElementById("modal");
+
+  modal.classList.remove("active");
   document.body.classList.remove("modal-open");
 }
 
+// cerrar con X
 document.getElementById("closeModal").onclick = closeModal;
 
+// cerrar tocando fondo
 document.getElementById("modal").onclick = (e) => {
   if (e.target.id === "modal") closeModal();
 };
 
-// SWIPE
+// ================= SWIPE =================
+
 let startX = 0;
 
 const modal = document.getElementById("modal");
@@ -75,29 +104,55 @@ modal.addEventListener("touchend", (e) => {
   document.getElementById("modalImg").src = images[currentIndex];
 });
 
-// BOTÓN TOP
+// ================= TECLADO =================
+
+document.addEventListener("keydown", (e) => {
+  const modal = document.getElementById("modal");
+
+  if (!modal.classList.contains("active")) return;
+
+  if (e.key === "ArrowRight") {
+    currentIndex = (currentIndex + 1) % images.length;
+  }
+
+  if (e.key === "ArrowLeft") {
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+  }
+
+  document.getElementById("modalImg").src = images[currentIndex];
+});
+
+// ================= BOTÓN TOP =================
+
 const topBtn = document.getElementById("topBtn");
 
 window.addEventListener("scroll", () => {
-  topBtn.style.display = window.scrollY > 300 ? "block" : "none";
+  if (window.scrollY > 300) {
+    topBtn.style.display = "block";
+  } else {
+    topBtn.style.display = "none";
+  }
 });
 
 topBtn.onclick = () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
-// 🔐 BOTÓN SECRETO
+// ================= BOTÓN SECRETO =================
+
 let keys = [];
 
 document.addEventListener("keydown", (e) => {
   keys.push(e.key.toLowerCase());
 
+  // 🔥 combo secreto
   if (keys.slice(-3).join("") === "dj9") {
     document.getElementById("downloadBtn").style.display = "block";
   }
 });
 
-// 📥 DESCARGA
+// ================= DESCARGA =================
+
 document.getElementById("downloadBtn").onclick = () => {
   const pass = prompt("Ingresa contraseña:");
 
@@ -114,5 +169,6 @@ document.getElementById("downloadBtn").onclick = () => {
   });
 };
 
-// INIT
+// ================= INIT =================
+
 loadImages();
