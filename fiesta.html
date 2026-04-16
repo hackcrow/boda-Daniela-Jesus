@@ -4,149 +4,55 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fotos Boda Jesus y Daniela 📸</title>
+<title>Fotos Boda Jesus y Daniela</title>
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: linear-gradient(135deg, #fdfef5, #fdfef5, #fdfef5);
-  color: #333;
-  text-align: center;
-}
+<link rel="stylesheet" href="index.css?v=1">
 
-h1 {
-  color: #2f3e2f;
-}
-
-button {
-  margin: 10px;
-  padding: 14px 25px;
-  border-radius: 30px;
-  border: none;
-  background: linear-gradient(45deg, #c5c2a8, #b1b2a6);
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-#preview {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-#gallery {
-  column-count: 2;
-  column-gap: 8px;
-  padding: 10px;
-}
-
-@media (min-width: 600px) {
-  #gallery { column-count: 3; }
-}
-
-@media (min-width: 900px) {
-  #gallery { column-count: 5; }
-}
-
-#gallery img {
-  width: 100%;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  break-inside: avoid;
-  cursor: pointer;
-}
-
-/* 🔥 MODAL */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 9999;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.9);
-  justify-content: center;
-  align-items: center;
-}
-
-.modal img {
-  max-width: 95%;
-  max-height: 90%;
-  border-radius: 12px;
-}
-
-#closeModal {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  font-size: 35px;
-  color: white;
-  cursor: pointer;
-}
-
-.hero {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 10px;
-}
-
-.hero img {
-  width: 90%;
-  max-width: 400px;
-  border-radius: 15px;
-  box-shadow: 0 0 20px rgba(255,255,255,0.2);
-}
-
-/* 🔥 animación foto nueva */
-.new-photo {
-  animation: fotoNueva 0.6s ease;
-}
-
-@keyframes fotoNueva {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-    filter: blur(10px);
-  }
-  60% {
-    transform: scale(1.05);
-    filter: blur(2px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-    filter: blur(0);
-  }
-}
-</style>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 
 <body>
 
-<!--<h1>Fotos Boda Jesus y Daniela 📸</h1> -->
+<!-- PORTADA -->
 <div class="hero">
   <img src="https://codeno.com.mx/nuestra_boda_corregida.png" alt="Nuestra boda">
 </div>
 
+<!-- INPUT -->
 <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
-<button id="uploadBtn">📸 Comparte tus fotos 🤗</button>
 
-<div id="preview"></div>
+<!-- BOTONES -->
+<button id="uploadBtn">Comparte tus fotos</button>
+
+<a href="galeria.html" class="btn-galeria">Ir a Galeria</a>
+
+<!-- PROGRESO -->
+<div id="progressContainer">
+  <div id="progressBar"></div>
+</div>
+
+<!-- GALERIA -->
 <div id="gallery"></div>
 
-<!-- 🔥 MODAL -->
-  
+<!-- MODAL -->
 <div id="modal" class="modal">
   <span id="closeModal">&times;</span>
   <img id="modalImg">
 </div>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=6"></script>
+
+<script>
+// cerrar modal
+document.getElementById("closeModal").onclick = () => {
+  document.getElementById("modal").style.display = "none";
+};
+
+document.getElementById("modal").onclick = (e) => {
+  if (e.target.id === "modal") {
+    document.getElementById("modal").style.display = "none";
+  }
+};
+</script>
 
 </body>
 </html>
