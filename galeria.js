@@ -8,24 +8,38 @@ window.addEventListener("load", () => {
   document.body.classList.add("loaded");
 });
 
-// LOAD
+console.log("GALERÍA INICIANDO...");
+
 async function loadImages() {
   try {
+    console.log("Cargando imágenes...");
+
     const res = await fetch(API_URL);
-    images = await res.json();
+
+    if (!res.ok) {
+      throw new Error("API falló: " + res.status);
+    }
+
+    const images = await res.json();
+    console.log("IMÁGENES:", images);
 
     const gallery = document.getElementById("gallery");
+
+    if (!gallery) {
+      console.error("NO EXISTE #gallery");
+      return;
+    }
+
     gallery.innerHTML = "";
 
-    images.forEach((url, index) => {
+    images.forEach((url) => {
       const img = document.createElement("img");
       img.src = url;
-      img.onclick = () => openModal(index);
       gallery.appendChild(img);
     });
 
   } catch (err) {
-    console.error("Error cargando imágenes:", err);
+    console.error("ERROR GALERÍA:", err);
   }
 }
 
