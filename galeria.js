@@ -145,7 +145,7 @@ if (topBtn) {
 
 // ================= DESCARGA =================
 
-document.getElementById("downloadBtn").onclick = () => {
+document.getElementById("downloadBtn").onclick = async () => {
   const pass = prompt("Ingresa contraseña:");
 
   if (pass !== "boda123") {
@@ -153,14 +153,38 @@ document.getElementById("downloadBtn").onclick = () => {
     return;
   }
 
-  images.forEach((url, i) => {
+  const btn = document.getElementById("downloadBtn");
+  btn.innerText = "Generando ZIP...";
+
+  const zip = new JSZip();
+
+  try {
+    const folder = zip.folder("fotos_boda");
+
+    for (let i = 0; i < images.length; i++) {
+      const url = images[i];
+
+      const response = await fetch(url);
+      const blob = await response.blob();
+
+      folder.file(`foto_${i + 1}.jpg`, blob);
+    }
+
+    const content = await zip.generateAsync({ type: "blob" });
+
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `foto_${i}.jpg`;
-    document.body.appendChild(a);
+    a.href = URL.createObjectURL(content);
+    a.download = "fotos_boda.zip";
     a.click();
-    document.body.removeChild(a);
-  });
+
+    URL.revokeObjectURL(a.href);
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al generar ZIP");
+  }
+
+  btn.innerText = "Descargar ZIP";
 };
 
 // ================= INIT =================
