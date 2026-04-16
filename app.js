@@ -4,8 +4,6 @@ const cloudName = "dazidfv1m";
 const uploadPreset = "fiesta-mia";
 const folder = "bodaDanielaJesus";
 
-const MAX_CONCURRENT_UPLOADS = 3;
-
 let loadedImages = new Set();
 let isFirstLoad = true;
 window.audioEnabled = false;
@@ -24,23 +22,21 @@ function openModal(url) {
   modalImg.src = url;
 }
 
-// ================= ANIMACIÓN NUEVA =================
+// ================= ANIMACIÓN =================
 function addImageAnimated(url) {
   const img = document.createElement("img");
   img.src = url;
 
-  img.classList.add("new-photo"); // 🔥 clase animada
-
+  img.classList.add("new-photo");
   img.onclick = () => openModal(url);
 
+  // 🔥 SIEMPRE ARRIBA
   document.getElementById("gallery").prepend(img);
 
-  // quitar clase después para no repetir animación
   setTimeout(() => {
     img.classList.remove("new-photo");
   }, 700);
 
-  // 🔊 sonido opcional
   if (window.audioEnabled) {
     new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3").play();
   }
@@ -48,47 +44,42 @@ function addImageAnimated(url) {
 
 // ================= LOAD =================
 async function loadImages() {
-  const res = await fetch(API_URL + "?t=" + Date.now());
-  const data = await res.json();
+  try {
+    const res = await fetch(API_URL + "?t=" + Date.now());
+    const data = await res.json();
 
-  const gallery = document.getElementById("gallery");
+    const gallery = document.getElementById("gallery");
 
-  // 🔥 YA VIENE ORDENADO (no invertir)
-  const ordered = [...data];
+    if (isFirstLoad) {
+      gallery.innerHTML = "";
+      loadedImages.clear();
 
-  if (isFirstLoad) {
-    gallery.innerHTML = "";
-    loadedImages.clear();
+      // 🔥 IMPORTANTE: pintar TODO en orden como viene
+      data.forEach(url => {
+        loadedImages.add(url);
 
-    ordered.forEach(url => {
-      loadedImages.add(url);
+        const img = document.createElement("img");
+        img.src = url;
+        img.onclick = () => openModal(url);
 
-      const img = document.createElement("img");
-      img.src = url;
-      img.onclick = () => openModal(url);
+        gallery.appendChild(img);
+      });
 
-      gallery.appendChild(img);
+      isFirstLoad = false;
+      return;
+    }
+
+    // 🔥 SOLO agregar nuevas arriba
+    data.forEach(url => {
+      if (!loadedImages.has(url)) {
+        loadedImages.add(url);
+        addImageAnimated(url);
+      }
     });
 
-    isFirstLoad = false;
-    return;
+  } catch (error) {
+    console.log("Error cargando imágenes:", error);
   }
-
-  ordered.forEach(url => {
-    if (!loadedImages.has(url)) {
-      loadedImages.add(url);
-      addImageAnimated(url); // ya usa prepend
-    }
-  });
-}
-
-  // nuevas (CON animación)
-  data.forEach(url => {
-    if (!loadedImages.has(url)) {
-      loadedImages.add(url);
-      addImageAnimated(url);
-    }
-  });
 }
 
 // ================= UPLOAD =================
@@ -100,21 +91,25 @@ async function uploadToCloudinary(file) {
   formData.append("upload_preset", uploadPreset);
   formData.append("folder", folder);
 
-  const res = await fetch(url, {
-    method: "POST",
-    body: formData
-  });
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  // 🔥 aparece animada inmediatamente
-  addImageAnimated(data.secure_url);
+    addImageAnimated(data.secure_url);
 
-  await fetch(API_URL, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ url: data.secure_url })
-  });
+    await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: data.secure_url })
+    });
+
+  } catch (error) {
+    console.log("Error subiendo:", error);
+  }
 }
 
 // ================= INIT =================
@@ -128,7 +123,6 @@ document.addEventListener("DOMContentLoaded", () => {
   fileInput.addEventListener("change", async (e) => {
     const files = Array.from(e.target.files);
 
-    // 🔥 subida en paralelo
     await Promise.all(files.map(uploadToCloudinary));
 
     fileInput.value = "";
