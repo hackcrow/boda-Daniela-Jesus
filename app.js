@@ -87,6 +87,10 @@ async function loadImages() {
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
 
+    // 🔥 AQUÍ VA
+    //const ordered = [...data].reverse().slice(0, 100);
+    const ordered = [...data].reverse();
+
     let newCount = 0;
 
     data.forEach(url => {
