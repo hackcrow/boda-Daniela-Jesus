@@ -24,24 +24,23 @@ function openModal(url) {
   modalImg.src = url;
 }
 
-// ================= ANIMACIÓN =================
+// ================= ANIMACIÓN NUEVA =================
 function addImageAnimated(url) {
   const img = document.createElement("img");
   img.src = url;
 
-  img.style.opacity = "0";
-  img.style.transform = "scale(0.8) translateY(20px)";
+  img.classList.add("new-photo"); // 🔥 clase animada
 
   img.onclick = () => openModal(url);
 
   document.getElementById("gallery").prepend(img);
 
+  // quitar clase después para no repetir animación
   setTimeout(() => {
-    img.style.transition = "all 0.5s ease";
-    img.style.opacity = "1";
-    img.style.transform = "scale(1) translateY(0)";
-  }, 50);
+    img.classList.remove("new-photo");
+  }, 700);
 
+  // 🔊 sonido opcional
   if (window.audioEnabled) {
     new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3").play();
   }
@@ -54,12 +53,12 @@ async function loadImages() {
 
   const gallery = document.getElementById("gallery");
 
-  // primera carga
+  // 🔥 YA VIENE ORDENADO (no invertir)
+  const ordered = [...data];
+
   if (isFirstLoad) {
     gallery.innerHTML = "";
     loadedImages.clear();
-
-    const ordered = [...data];
 
     ordered.forEach(url => {
       loadedImages.add(url);
@@ -75,7 +74,15 @@ async function loadImages() {
     return;
   }
 
-  // nuevas
+  ordered.forEach(url => {
+    if (!loadedImages.has(url)) {
+      loadedImages.add(url);
+      addImageAnimated(url); // ya usa prepend
+    }
+  });
+}
+
+  // nuevas (CON animación)
   data.forEach(url => {
     if (!loadedImages.has(url)) {
       loadedImages.add(url);
@@ -100,8 +107,8 @@ async function uploadToCloudinary(file) {
 
   const data = await res.json();
 
+  // 🔥 aparece animada inmediatamente
   addImageAnimated(data.secure_url);
-  lanzarConfeti();
 
   await fetch(API_URL, {
     method: "POST",
@@ -121,18 +128,11 @@ document.addEventListener("DOMContentLoaded", () => {
   fileInput.addEventListener("change", async (e) => {
     const files = Array.from(e.target.files);
 
+    // 🔥 subida en paralelo
     await Promise.all(files.map(uploadToCloudinary));
 
     fileInput.value = "";
   });
-
-  function lanzarConfeti() {
-    confetti({
-      particleCount: 120,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-  }
 
   // cerrar modal
   const modal = document.getElementById("modal");
