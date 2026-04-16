@@ -4,74 +4,50 @@ const cloudName = "dazidfv1m";
 const uploadPreset = "fiesta-mia";
 const folder = "bodaDanielaJesus";
 
+let images = [];
 let loadedImages = new Set();
+let currentIndex = 0;
 let isFirstLoad = true;
-window.audioEnabled = false;
 
-// 🔊 activar audio
-document.addEventListener("click", () => {
-  window.audioEnabled = true;
-}, { once: true });
+// ================= INIT =================
 
-// ================= MODAL =================
-function openModal(url) {
-  const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modalImg");
+window.addEventListener("load", () => {
+  document.body.classList.add("loaded");
+  resetModal();
+});
 
-  modal.style.display = "flex";
-  modalImg.src = url;
-}
+window.addEventListener("pageshow", () => {
+  resetModal();
+});
 
-// ================= ANIMACIÓN =================
-function addImageAnimated(url) {
-  const gallery = document.getElementById("gallery");
-
-  // 🔥 evitar duplicados
-  if (loadedImages.has(url)) return;
-
-  loadedImages.add(url);
-
-  const img = document.createElement("img");
-  img.src = url;
-
-  img.classList.add("new-photo");
-  img.onclick = () => openModal(url);
-
-  // 🔥 insertar arriba
-  gallery.prepend(img);
-
-  // 🔥 mantener máximo 20
-  while (gallery.children.length > 20) {
-    const last = gallery.lastChild;
-    loadedImages.delete(last.src);
-    gallery.removeChild(last);
-  }
-
-  // limpiar animación
-  setTimeout(() => img.classList.remove("new-photo"), 600);
+function resetModal() {
+  document.getElementById("modal").classList.remove("active");
+  document.body.classList.remove("modal-open");
 }
 
 // ================= LOAD =================
+
 async function loadImages() {
   try {
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
 
-    const gallery = document.getElementById("gallery");
+    images = data;
 
-    // 🔥 SOLO 20 MÁS RECIENTES
-    const latest = data.slice(0, 20);
+    const gallery = document.getElementById("gallery");
 
     if (isFirstLoad) {
       gallery.innerHTML = "";
       loadedImages.clear();
 
-      latest.forEach(url => {
+      const latest = data.slice(0, 20);
+
+      latest.forEach((url, index) => {
         loadedImages.add(url);
 
         const img = document.createElement("img");
         img.src = url;
-        img.onclick = () => openModal(url);
+        img.onclick = () => openModal(index);
 
         gallery.appendChild(img);
       });
@@ -80,88 +56,116 @@ async function loadImages() {
       return;
     }
 
-    // 🔥 nuevas imágenes
-    latest.forEach(url => {
+    data.forEach((url, index) => {
       if (!loadedImages.has(url)) {
-        addImageAnimated(url);
+        loadedImages.add(url);
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.classList.add("new-photo");
+        img.onclick = () => openModal(index);
+
+        gallery.prepend(img);
+
+        setTimeout(() => img.classList.remove("new-photo"), 500);
+
+        while (gallery.children.length > 20) {
+          const last = gallery.lastChild;
+          loadedImages.delete(last.src);
+          gallery.removeChild(last);
+        }
       }
     });
 
-  } catch (error) {
-    console.log("Error cargando imágenes:", error);
+  } catch (err) {
+    console.error(err);
   }
 }
 
-// ================= UPLOAD CON PROGRESO =================
+// ================= MODAL =================
+
+function openModal(index) {
+  currentIndex = index;
+
+  const modal = document.getElementById("modal");
+  const modalImg = document.getElementById("modalImg");
+
+  modal.classList.add("active");
+  modalImg.src = images[index];
+
+  document.body.classList.add("modal-open");
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.remove("active");
+  document.body.classList.remove("modal-open");
+}
+
+document.getElementById("closeModal").onclick = closeModal;
+
+document.getElementById("modal").onclick = (e) => {
+  if (e.target.id === "modal") closeModal();
+};
+
+// ================= SWIPE =================
+
+let startX = 0;
+
+const modal = document.getElementById("modal");
+
+modal.addEventListener("touchstart", (e) => {
+  startX = e.touches[0].clientX;
+});
+
+modal.addEventListener("touchend", (e) => {
+  let diff = startX - e.changedTouches[0].clientX;
+
+  if (diff > 50) currentIndex++;
+  if (diff < -50) currentIndex--;
+
+  if (currentIndex < 0) currentIndex = images.length - 1;
+  if (currentIndex >= images.length) currentIndex = 0;
+
+  document.getElementById("modalImg").src = images[currentIndex];
+});
+
+// ================= UPLOAD =================
+
+document.getElementById("uploadBtn").onclick = () => {
+  document.getElementById("fileInput").click();
+};
+
+document.getElementById("fileInput").addEventListener("change", async (e) => {
+  const files = Array.from(e.target.files);
+
+  await Promise.all(files.map(uploadToCloudinary));
+
+  e.target.value = "";
+});
+
 async function uploadToCloudinary(file) {
-  return new Promise((resolve, reject) => {
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-    const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-    const xhr = new XMLHttpRequest();
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+  formData.append("folder", folder);
 
-    const progressContainer = document.getElementById("progressContainer");
-    const progressBar = document.getElementById("progressBar");
+  const res = await fetch(url, {
+    method: "POST",
+    body: formData
+  });
 
-    progressContainer.style.display = "block";
+  const data = await res.json();
 
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) {
-        const percent = (e.loaded / e.total) * 100;
-        progressBar.style.width = percent + "%";
-      }
-    });
-
-    xhr.onreadystatechange = async () => {
-      if (xhr.readyState === 4) {
-
-        progressBar.style.width = "0%";
-        progressContainer.style.display = "none";
-
-        if (xhr.status === 200) {
-          const data = JSON.parse(xhr.responseText);
-
-          // 🔥 SOLO guardar, NO insertar (evita duplicados)
-          await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: data.secure_url })
-          });
-
-          resolve();
-        } else {
-          reject();
-        }
-      }
-    };
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", uploadPreset);
-    formData.append("folder", folder);
-
-    xhr.open("POST", url);
-    xhr.send(formData);
+  await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url: data.secure_url })
   });
 }
 
-// ================= INIT =================
-document.addEventListener("DOMContentLoaded", () => {
+// ================= AUTO REFRESH =================
 
-  const fileInput = document.getElementById("fileInput");
-  const uploadBtn = document.getElementById("uploadBtn");
-
-  uploadBtn.onclick = () => fileInput.click();
-
-  fileInput.addEventListener("change", async (e) => {
-    const files = Array.from(e.target.files);
-
-    await Promise.all(files.map(uploadToCloudinary));
-
-    fileInput.value = "";
-  });
-
-  loadImages();
-});
-
-// 🔄 auto refresh
+loadImages();
 setInterval(loadImages, 3000);
