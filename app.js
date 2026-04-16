@@ -12,6 +12,8 @@ const TIMEOUT_MS = 30000;
 let loadedImages = new Set();
 window.audioEnabled = false;
 
+let isFirstLoad = true;
+
 function launchConfetti() {
   const duration = 1500;
   const end = Date.now() + duration;
@@ -87,21 +89,39 @@ async function loadImages() {
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
 
-    // 🔥 AQUÍ VA
-    //const ordered = [...data].reverse().slice(0, 100);
-    const ordered = [...data].reverse();
+    const ordered = [...data]; // 👈 NO reverse aquí
 
+    const gallery = document.getElementById("gallery");
+
+    // 🟢 PRIMERA CARGA
+    if (isFirstLoad) {
+      gallery.innerHTML = "";
+      loadedImages.clear();
+
+      ordered.forEach(url => {
+        loadedImages.add(url);
+
+        const img = document.createElement("img");
+        img.src = url;
+
+        gallery.appendChild(img); // 👈 append mantiene orden real
+      });
+
+      isFirstLoad = false;
+      return;
+    }
+
+    // ⚡ NUEVAS FOTOS
     let newCount = 0;
 
-    data.forEach(url => {
+    ordered.forEach(url => {
       if (!loadedImages.has(url)) {
         loadedImages.add(url);
-        addImageAnimated(url);
+        addImageAnimated(url); // 👈 prepend aquí sí
         newCount++;
       }
     });
 
-    // 🎉 confetti si llegan varias
     if (newCount >= 3) {
       launchConfetti();
     }
