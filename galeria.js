@@ -54,14 +54,14 @@ function openModal(index) {
   currentIndex = index;
 
   const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modal-img");
+  const modalImg = document.getElementById("modal-img"); // 👈 FIX ID
 
   if (!modal || !modalImg) {
-    console.error("Modal no encontrado");
+    console.error("Modal o imagen no encontrados");
     return;
   }
 
-  modal.classList.remove("hidden");
+  modal.classList.remove("hidden"); // 👈 FIX VISIBILIDAD
   modalImg.src = images[currentIndex];
 
   document.body.classList.add("modal-open");
