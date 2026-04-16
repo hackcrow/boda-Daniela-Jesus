@@ -37,6 +37,7 @@ function addImageAnimated(url) {
   img.classList.add("new-photo");
   img.onclick = () => openModal(url);
 
+  // 🔥 insertar arriba
   gallery.prepend(img);
 
   // 🔥 mantener máximo 20
@@ -46,54 +47,49 @@ function addImageAnimated(url) {
     gallery.removeChild(last);
   }
 
-  setTimeout(() => img.classList.remove("new-photo"), 600);
-}
-
-  // 🔥 mantener máximo 20
-  while (gallery.children.length > 20) {
-    const last = gallery.lastChild;
-    loadedImages.delete(last.src);
-    gallery.removeChild(last);
-  }
-
-  // limpiar clase
+  // limpiar animación
   setTimeout(() => img.classList.remove("new-photo"), 600);
 }
 
 // ================= LOAD =================
 async function loadImages() {
-  const res = await fetch(API_URL + "?t=" + Date.now());
-  const data = await res.json();
+  try {
+    const res = await fetch(API_URL + "?t=" + Date.now());
+    const data = await res.json();
 
-  const gallery = document.getElementById("gallery");
+    const gallery = document.getElementById("gallery");
 
-  // 🔥 SOLO 20 MÁS RECIENTES
-  const latest = data.slice(0, 20);
+    // 🔥 SOLO 20 MÁS RECIENTES
+    const latest = data.slice(0, 20);
 
-  if (isFirstLoad) {
-    gallery.innerHTML = "";
-    loadedImages.clear();
+    if (isFirstLoad) {
+      gallery.innerHTML = "";
+      loadedImages.clear();
 
+      latest.forEach(url => {
+        loadedImages.add(url);
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.onclick = () => openModal(url);
+
+        gallery.appendChild(img);
+      });
+
+      isFirstLoad = false;
+      return;
+    }
+
+    // 🔥 nuevas imágenes
     latest.forEach(url => {
-      loadedImages.add(url);
-
-      const img = document.createElement("img");
-      img.src = url;
-      img.onclick = () => openModal(url);
-
-      gallery.appendChild(img);
+      if (!loadedImages.has(url)) {
+        addImageAnimated(url);
+      }
     });
 
-    isFirstLoad = false;
-    return;
+  } catch (error) {
+    console.log("Error cargando imágenes:", error);
   }
-
-  latest.forEach(url => {
-    if (!loadedImages.has(url)) {
-      loadedImages.add(url);
-      addImageAnimated(url);
-    }
-  });
 }
 
 // ================= UPLOAD CON PROGRESO =================
@@ -103,8 +99,10 @@ async function uploadToCloudinary(file) {
     const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
     const xhr = new XMLHttpRequest();
 
+    const progressContainer = document.getElementById("progressContainer");
     const progressBar = document.getElementById("progressBar");
-    progressBar.style.display = "block";
+
+    progressContainer.style.display = "block";
 
     xhr.upload.addEventListener("progress", (e) => {
       if (e.lengthComputable) {
@@ -115,14 +113,14 @@ async function uploadToCloudinary(file) {
 
     xhr.onreadystatechange = async () => {
       if (xhr.readyState === 4) {
+
         progressBar.style.width = "0%";
-        progressBar.style.display = "none";
+        progressContainer.style.display = "none";
 
         if (xhr.status === 200) {
           const data = JSON.parse(xhr.responseText);
 
-          //addImageAnimated(data.secure_url);
-
+          // 🔥 SOLO guardar, NO insertar (evita duplicados)
           await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -156,11 +154,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fileInput.addEventListener("change", async (e) => {
     const files = Array.from(e.target.files);
+
     await Promise.all(files.map(uploadToCloudinary));
+
     fileInput.value = "";
   });
 
   loadImages();
 });
 
+// 🔄 auto refresh
 setInterval(loadImages, 3000);
