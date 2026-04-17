@@ -7,7 +7,7 @@
 <title>Fotos Boda 📸</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./index.css?v=1">
+<link rel="stylesheet" href="./index.css?v=2"> <!-- 🔥 subí versión -->
 
 </head>
 
@@ -23,6 +23,11 @@
     <button id="uploadBtn" class="btn">Comparte tus fotos</button>
   </div>
 
+  <!-- 🔥 NUEVO: texto guía -->
+  <p style="font-size:14px; opacity:0.7; text-align:center; margin-top:-10px;">
+    Puedes subir varias fotos al mismo tiempo 📸
+  </p>
+
   <div class="btn-wrapper">
     <a href="galeria.html?v=2" class="btn">Ir a Galería</a>
   </div>
@@ -34,18 +39,18 @@
 <div id="gallery"></div>
 
 <!-- 🔥 MODAL -->
-
-<div id="modal" class="modal">
-  <span id="closeModal">X</span>
+<div id="modal">
+  <span id="closeModal">&times;</span> <!-- 🔥 mejor símbolo -->
   <img id="modalImg">
 </div>
 
+<!-- 🔥 PANEL DE SUBIDA -->
 <div id="uploadStatus">
   <p id="uploadText">Subiendo...</p>
   <div id="uploadList"></div>
 </div>
 
-<script src="./app.js?v=1"></script>
+<script src="./app.js?v=2"></script> <!-- 🔥 importante para cache -->
 
 </body>
 </html>
