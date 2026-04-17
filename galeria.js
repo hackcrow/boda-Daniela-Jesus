@@ -1,9 +1,11 @@
 const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 
 let images = [];
+let loadedImages = new Set();
 let currentIndex = 0;
+let isFirstLoad = true;
 
-// ================= INIT / RESET =================
+// ================= INIT =================
 
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
@@ -16,11 +18,7 @@ window.addEventListener("pageshow", () => {
 
 function resetModalState() {
   const modal = document.getElementById("modal");
-
-  if (modal) {
-    modal.classList.remove("active");
-  }
-
+  if (modal) modal.classList.remove("active");
   document.body.classList.remove("modal-open");
 }
 
@@ -29,21 +27,63 @@ function resetModalState() {
 async function loadImages() {
   try {
     const res = await fetch(API_URL + "?t=" + Date.now());
+    const data = await res.json();
 
-    if (!res.ok) throw new Error("Error API: " + res.status);
-
-    images = await res.json();
+    images = data;
 
     const gallery = document.getElementById("gallery");
-    gallery.innerHTML = "";
+    if (!gallery) return;
 
-    images.forEach((url, index) => {
-      const img = document.createElement("img");
-      img.src = url;
+    // 🔥 SOLO primeras 50 (puedes ajustar)
+    const latest = data.slice(0, 50);
 
-      img.onclick = () => openModal(index);
+    // ================= PRIMERA CARGA =================
+    if (isFirstLoad) {
+      gallery.innerHTML = "";
+      loadedImages.clear();
 
-      gallery.appendChild(img);
+      latest.forEach((url, index) => {
+        loadedImages.add(url);
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.onclick = () => openModal(index);
+
+        gallery.appendChild(img);
+      });
+
+      isFirstLoad = false;
+      return;
+    }
+
+    // ================= NUEVAS IMÁGENES =================
+    latest.forEach((url, index) => {
+      if (!loadedImages.has(url)) {
+        loadedImages.add(url);
+
+        const img = document.createElement("img");
+        img.src = url;
+
+        // 🔥 animación glow + zoom
+        img.classList.add("new-photo");
+
+        img.onclick = () => openModal(index);
+
+        // 🔥 meter arriba
+        gallery.prepend(img);
+
+        // quitar animación después
+        setTimeout(() => {
+          img.classList.remove("new-photo");
+        }, 2000);
+
+        // 🔥 limitar cantidad
+        while (gallery.children.length > 50) {
+          const last = gallery.lastChild;
+          loadedImages.delete(last.src);
+          gallery.removeChild(last);
+        }
+      }
     });
 
   } catch (err) {
@@ -59,18 +99,17 @@ function openModal(index) {
   const modal = document.getElementById("modal");
   const modalImg = document.getElementById("modalImg");
 
-  if (!modal || !modalImg) return;
+  const imgData = images[index];
+  const url = typeof imgData === "string" ? imgData : imgData?.url;
 
   modal.classList.add("active");
-  modalImg.src = images[index];
+  modalImg.src = url;
 
   document.body.classList.add("modal-open");
 }
 
 function closeModal() {
   const modal = document.getElementById("modal");
-
-  if (!modal) return;
 
   modal.classList.remove("active");
   document.body.classList.remove("modal-open");
@@ -79,114 +118,13 @@ function closeModal() {
 // cerrar con X
 document.getElementById("closeModal").onclick = closeModal;
 
-// cerrar clic en fondo
+// cerrar tocando fondo
 document.getElementById("modal").onclick = (e) => {
   if (e.target.id === "modal") closeModal();
 };
 
-// ================= SWIPE =================
+// ================= AUTO REFRESH =================
 
-let startX = 0;
-
-const modal = document.getElementById("modal");
-
-modal.addEventListener("touchstart", (e) => {
-  startX = e.touches[0].clientX;
-});
-
-modal.addEventListener("touchend", (e) => {
-  let diff = startX - e.changedTouches[0].clientX;
-
-  if (diff > 50) currentIndex++;
-  if (diff < -50) currentIndex--;
-
-  if (currentIndex < 0) currentIndex = images.length - 1;
-  if (currentIndex >= images.length) currentIndex = 0;
-
-  document.getElementById("modalImg").src = images[currentIndex];
-});
-
-// ================= TECLAS (TOGGLE BOTÓN) =================
-
-let keys = [];
-
-document.addEventListener("keydown", (e) => {
-  keys.push(e.key.toLowerCase());
-
-  if (keys.length > 3) keys.shift();
-
-  const combo = keys.join("");
-  const btn = document.getElementById("downloadBtn");
-
-  if (!btn) return;
-
-  if (combo === "dj9") {
-    btn.style.display = "block";
-  }
-
-  if (combo === "dj0") {
-    btn.style.display = "none";
-  }
-});
-
-// ================= BOTÓN TOP =================
-
-const topBtn = document.getElementById("topBtn");
-
-if (topBtn) {
-  window.addEventListener("scroll", () => {
-    topBtn.style.display = window.scrollY > 300 ? "block" : "none";
-  });
-
-  topBtn.onclick = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-}
-
-// ================= DESCARGA =================
-
-document.getElementById("downloadBtn").onclick = async () => {
-  const pass = prompt("Ingresa contraseña:");
-
-  if (pass !== "boda123") {
-    alert("Contraseña incorrecta");
-    return;
-  }
-
-  const btn = document.getElementById("downloadBtn");
-  btn.innerText = "Generando ZIP...";
-
-  const zip = new JSZip();
-
-  try {
-    const folder = zip.folder("fotos_boda");
-
-    for (let i = 0; i < images.length; i++) {
-      const url = images[i];
-
-      const response = await fetch(url);
-      const blob = await response.blob();
-
-      folder.file(`foto_${i + 1}.jpg`, blob);
-    }
-
-    const content = await zip.generateAsync({ type: "blob" });
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(content);
-    a.download = "fotos_boda.zip";
-    a.click();
-
-    URL.revokeObjectURL(a.href);
-
-  } catch (err) {
-    console.error(err);
-    alert("Error al generar ZIP");
-  }
-
-  btn.innerText = "Descargar ZIP";
-};
-
-// ================= INIT =================
-
+// 🔥 cada 3 segundos
 loadImages();
+setInterval(loadImages, 3000);
