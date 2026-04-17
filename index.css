@@ -35,6 +35,16 @@ body.loaded {
   justify-content: center;
 }
 
+#uploadBtn {
+  font-size: 20px;
+  padding: 18px 32px;
+  font-weight: bold;
+}
+
+#uploadBtn:hover {
+  transform: scale(1.05);
+  transition: 0.2s;
+}
 .btn {
   padding: 14px 25px;
   border-radius: 30px;
