@@ -148,12 +148,48 @@ document.getElementById("uploadBtn").onclick = () => {
 document.getElementById("fileInput").addEventListener("change", async (e) => {
   const files = Array.from(e.target.files);
 
-  await Promise.all(files.map(uploadToCloudinary));
+  const status = document.getElementById("uploadStatus");
+  const text = document.getElementById("uploadText");
+  const list = document.getElementById("uploadList");
+
+  status.style.display = "block";
+  list.innerHTML = "";
+
+  let completed = 0;
+
+  // 🔥 crear previews
+  files.forEach((file, index) => {
+    const div = document.createElement("div");
+    div.className = "upload-item";
+    div.id = "upload-" + index;
+
+    div.innerHTML = `
+      <img src="${URL.createObjectURL(file)}">
+      <span>⏳ Subiendo...</span>
+    `;
+
+    list.appendChild(div);
+  });
+
+  // 🔥 subir uno por uno (mejor UX)
+  for (let i = 0; i < files.length; i++) {
+    await uploadToCloudinary(files[i], i, files.length);
+
+    completed++;
+
+    text.innerText = `Subiendo ${completed} de ${files.length}`;
+  }
+
+  text.innerText = "🎉 Subida completada";
+
+  setTimeout(() => {
+    status.style.display = "none";
+  }, 2000);
 
   e.target.value = "";
 });
 
-async function uploadToCloudinary(file) {
+async function uploadToCloudinary(file, index, total) {
   const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
   const formData = new FormData();
@@ -161,18 +197,31 @@ async function uploadToCloudinary(file) {
   formData.append("upload_preset", uploadPreset);
   formData.append("folder", folder);
 
-  const res = await fetch(url, {
-    method: "POST",
-    body: formData
-  });
+  const item = document.getElementById("upload-" + index);
 
-  const data = await res.json();
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
 
-  await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url: data.secure_url })
-  });
+    const data = await res.json();
+
+    await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: data.secure_url })
+    });
+
+    // ✅ éxito
+    item.querySelector("span").innerText = "✅ Subida";
+
+  } catch (err) {
+    console.error(err);
+
+    // ❌ error
+    item.querySelector("span").innerText = "❌ Error";
+  }
 }
 
 // ================= AUTO REFRESH =================
