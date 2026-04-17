@@ -72,7 +72,7 @@ async function loadImages() {
 
         setTimeout(() => {
           img.classList.remove("new-photo");
-        }, 1800);
+        }, 4000);
 
         while (gallery.children.length > 20) {
           const last = gallery.lastChild;
