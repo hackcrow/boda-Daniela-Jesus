@@ -36,7 +36,6 @@ async function loadImages() {
     images = data;
 
     const gallery = document.getElementById("gallery");
-
     const latest = data.slice(0, 20);
 
     if (isFirstLoad) {
@@ -161,7 +160,7 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
 
   // 🔥 UI inmediata
   status.style.display = "block";
-  text.innerText = "Preparando fotos...";
+  text.innerText = "📦 Preparando fotos...";
   list.innerHTML = "";
 
   uploadBtn.disabled = true;
@@ -177,17 +176,17 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
 
     div.innerHTML = `
       <img src="${URL.createObjectURL(file)}">
-      <span>⏳ En espera...</span>
-    ";
+      <span>📦 Preparando...</span>
+    `;
 
     list.appendChild(div);
   });
 
-  // 🔥 subida secuencial con UI fluida
+  // 🔥 subida secuencial
   for (let i = 0; i < files.length; i++) {
     text.innerText = `Subiendo ${completed + 1} de ${files.length}`;
 
-    await new Promise(r => setTimeout(r, 50)); // 🔥 mejora visual
+    await new Promise(r => setTimeout(r, 50)); // suaviza UI
 
     await uploadToCloudinary(files[i], i);
 
