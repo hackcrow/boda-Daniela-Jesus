@@ -1,9 +1,9 @@
 body {
   margin: 0;
   font-family: Arial;
-  background: #fdfef5;
+  /*background: #fdfef5;*/
   color: #333;
-
+background: red !important;
   opacity: 0;
   transition: opacity 0.6s ease;
 }
