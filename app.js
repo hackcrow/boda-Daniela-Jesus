@@ -178,7 +178,7 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
     div.innerHTML = `
       <img src="${URL.createObjectURL(file)}">
       <span>⏳ En espera...</span>
-    `;
+    ";
 
     list.appendChild(div);
   });
