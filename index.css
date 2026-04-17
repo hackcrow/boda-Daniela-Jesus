@@ -35,16 +35,6 @@ body.loaded {
   justify-content: center;
 }
 
-#uploadBtn {
-  font-size: 20px;
-  padding: 18px 32px;
-  font-weight: bold;
-}
-
-#uploadBtn:hover {
-  transform: scale(1.05);
-  transition: 0.2s;
-}
 .btn {
   padding: 14px 25px;
   border-radius: 30px;
@@ -53,6 +43,24 @@ body.loaded {
   color: white;
   text-decoration: none;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+/* 🔥 botón principal */
+#uploadBtn {
+  font-size: 20px;
+  padding: 18px 32px;
+  font-weight: bold;
+}
+
+#uploadBtn:hover {
+  transform: scale(1.05);
+}
+
+/* 🔥 estado deshabilitado */
+#uploadBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* GALERIA */
@@ -107,6 +115,7 @@ body.loaded {
   font-size: 35px;
   color: white;
   cursor: pointer;
+  z-index: 10000;
 }
 
 /* 🔥 blur fondo */
@@ -130,16 +139,7 @@ body.modal-open > *:not(#modal) {
   }
 }
 
-#closeModal {
-  position: absolute;
-  top: 20px;
-  right: 25px;
-  font-size: 35px;
-  color: white;
-  cursor: pointer;
-  z-index: 10000;
-}
-
+/* 🔥 PANEL DE SUBIDA */
 #uploadStatus {
   position: fixed;
   bottom: 20px;
@@ -153,6 +153,13 @@ body.modal-open > *:not(#modal) {
   width: 90%;
   max-width: 400px;
   display: none;
+
+  animation: pop 0.4s ease;
+}
+
+@keyframes pop {
+  from { transform: translateX(-50%) scale(0.9); }
+  to { transform: translateX(-50%) scale(1); }
 }
 
 #uploadText {
@@ -160,6 +167,7 @@ body.modal-open > *:not(#modal) {
   font-weight: bold;
 }
 
+/* 🔥 items subida */
 .upload-item {
   display: flex;
   align-items: center;
@@ -168,10 +176,16 @@ body.modal-open > *:not(#modal) {
   font-size: 14px;
 }
 
+/* 🔥 previews más bonitas */
 .upload-item img {
   width: 40px;
   height: 40px;
   border-radius: 8px;
   object-fit: cover;
+  border: 2px solid #eee;
+  transition: 0.2s;
 }
 
+.upload-item img:hover {
+  transform: scale(1.05);
+}
