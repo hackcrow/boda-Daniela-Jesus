@@ -173,12 +173,12 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
     const div = document.createElement("div");
     div.className = "upload-item";
     div.id = "upload-" + index;
-
+  
     div.innerHTML = `
       <img src="${URL.createObjectURL(file)}">
       <span>📦 Preparando...</span>
     `;
-
+  
     list.appendChild(div);
   });
 
