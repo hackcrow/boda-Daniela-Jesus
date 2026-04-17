@@ -158,9 +158,8 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
   const list = document.getElementById("uploadList");
   const uploadBtn = document.getElementById("uploadBtn");
 
-  // 🔥 UI inmediata
   status.style.display = "block";
-  text.innerText = "📦 Preparando fotos...";
+  text.innerText = "Preparando fotos...";
   list.innerHTML = "";
 
   uploadBtn.disabled = true;
@@ -168,32 +167,31 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
 
   let completed = 0;
 
-  // 🔥 previews
   files.forEach((file, index) => {
     const div = document.createElement("div");
     div.className = "upload-item";
     div.id = "upload-" + index;
-  
-    div.innerHTML = `
-      <img src="${URL.createObjectURL(file)}">
-      <span>📦 Preparando...</span>
-    `;
-  
+
+    div.innerHTML =
+      '<img src="' + URL.createObjectURL(file) + '">' +
+      "<span>Preparando...</span>";
+
     list.appendChild(div);
   });
 
-  // 🔥 subida secuencial
   for (let i = 0; i < files.length; i++) {
-    text.innerText = `Subiendo ${completed + 1} de ${files.length}`;
+    text.innerText = "Subiendo " + (completed + 1) + " de " + files.length;
 
-    await new Promise(r => setTimeout(r, 50)); // suaviza UI
+    await new Promise(function (r) {
+      setTimeout(r, 50);
+    });
 
     await uploadToCloudinary(files[i], i);
 
     completed++;
   }
 
-  text.innerText = "🎉 ¡Tus fotos ya están en la galería!";
+  text.innerText = "Subida completada";
 
   setTimeout(() => {
     status.style.display = "none";
@@ -203,7 +201,7 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
   uploadBtn.innerText = "Comparte tus fotos";
 
   e.target.value = "";
-}
+});
 
 // ================= UPLOAD FUNC =================
 
@@ -218,7 +216,7 @@ async function uploadToCloudinary(file, index) {
   const item = document.getElementById("upload-" + index);
 
   try {
-    item.querySelector("span").innerText = "⏳ Subiendo...";
+    item.querySelector("span").innerText = "Subiendo...";
 
     const res = await fetch(url, {
       method: "POST",
@@ -233,11 +231,11 @@ async function uploadToCloudinary(file, index) {
       body: JSON.stringify({ url: data.secure_url })
     });
 
-    item.querySelector("span").innerText = "✅ Subida";
+    item.querySelector("span").innerText = "OK";
 
   } catch (err) {
     console.error(err);
-    item.querySelector("span").innerText = "❌ Error";
+    item.querySelector("span").innerText = "Error";
   }
 }
 
@@ -252,9 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("modal");
   const closeBtn = document.getElementById("closeModal");
 
-  if (closeBtn) {
-    closeBtn.onclick = closeModal;
-  }
+  if (closeBtn) closeBtn.onclick = closeModal;
 
   if (modal) {
     modal.addEventListener("click", (e) => {
