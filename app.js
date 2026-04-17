@@ -21,7 +21,8 @@ window.addEventListener("pageshow", () => {
 });
 
 function resetModal() {
-  document.getElementById("modal").classList.remove("active");
+  const modal = document.getElementById("modal");
+  if (modal) modal.classList.remove("active");
   document.body.classList.remove("modal-open");
 }
 
@@ -32,14 +33,12 @@ async function loadImages() {
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
 
-    images = data; // 🔥 FIX CRÍTICO
-    
+    images = data;
+
     const gallery = document.getElementById("gallery");
 
-    // 🔥 SOLO primeras 20 (más recientes)
     const latest = data.slice(0, 20);
 
-    // 🔥 PRIMERA CARGA (sin animación)
     if (isFirstLoad) {
       gallery.innerHTML = "";
       loadedImages.clear();
@@ -51,14 +50,13 @@ async function loadImages() {
         img.src = url;
         img.onclick = () => openModal(index);
 
-        gallery.appendChild(img); // orden correcto
+        gallery.appendChild(img);
       });
 
       isFirstLoad = false;
       return;
     }
 
-    // 🔥 SOLO NUEVAS (sin borrar nada)
     latest.forEach((url, index) => {
       if (!loadedImages.has(url)) {
         loadedImages.add(url);
@@ -68,11 +66,10 @@ async function loadImages() {
         img.classList.add("new-photo");
         img.onclick = () => openModal(index);
 
-        gallery.prepend(img); // 🔥 nuevas arriba
+        gallery.prepend(img);
 
         setTimeout(() => img.classList.remove("new-photo"), 500);
 
-        // 🔥 mantener máximo 20
         while (gallery.children.length > 20) {
           const last = gallery.lastChild;
           loadedImages.delete(last.src);
@@ -102,7 +99,6 @@ function openModal(index) {
       : imgData?.url;
 
   modal.classList.add("active");
-
   modalImg.src = url;
 
   document.body.classList.add("modal-open");
@@ -110,7 +106,6 @@ function openModal(index) {
 
 function closeModal() {
   const modal = document.getElementById("modal");
-
   if (!modal) return;
 
   modal.classList.remove("active");
@@ -123,21 +118,31 @@ let startX = 0;
 
 const modal = document.getElementById("modal");
 
-modal.addEventListener("touchstart", (e) => {
-  startX = e.touches[0].clientX;
-});
+if (modal) {
+  modal.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+  });
 
-modal.addEventListener("touchend", (e) => {
-  let diff = startX - e.changedTouches[0].clientX;
+  modal.addEventListener("touchend", (e) => {
+    if (!images.length) return;
 
-  if (diff > 50) currentIndex++;
-  if (diff < -50) currentIndex--;
+    let diff = startX - e.changedTouches[0].clientX;
 
-  if (currentIndex < 0) currentIndex = images.length - 1;
-  if (currentIndex >= images.length) currentIndex = 0;
+    if (diff > 50) currentIndex++;
+    if (diff < -50) currentIndex--;
 
-  document.getElementById("modalImg").src = images[currentIndex];
-});
+    if (currentIndex < 0) currentIndex = images.length - 1;
+    if (currentIndex >= images.length) currentIndex = 0;
+
+    const imgData = images[currentIndex];
+    const url =
+      typeof imgData === "string"
+        ? imgData
+        : imgData?.url;
+
+    document.getElementById("modalImg").src = url;
+  });
+}
 
 // ================= UPLOAD =================
 
@@ -147,17 +152,24 @@ document.getElementById("uploadBtn").onclick = () => {
 
 document.getElementById("fileInput").addEventListener("change", async (e) => {
   const files = Array.from(e.target.files);
+  if (!files.length) return;
 
   const status = document.getElementById("uploadStatus");
   const text = document.getElementById("uploadText");
   const list = document.getElementById("uploadList");
+  const uploadBtn = document.getElementById("uploadBtn");
 
+  // 🔥 UI inmediata
   status.style.display = "block";
+  text.innerText = "Preparando fotos...";
   list.innerHTML = "";
+
+  uploadBtn.disabled = true;
+  uploadBtn.innerText = "Subiendo fotos...";
 
   let completed = 0;
 
-  // 🔥 crear previews
+  // 🔥 previews
   files.forEach((file, index) => {
     const div = document.createElement("div");
     div.className = "upload-item";
@@ -165,31 +177,38 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
 
     div.innerHTML = `
       <img src="${URL.createObjectURL(file)}">
-      <span>⏳ Subiendo...</span>
+      <span>⏳ En espera...</span>
     `;
 
     list.appendChild(div);
   });
 
-  // 🔥 subir uno por uno (mejor UX)
+  // 🔥 subida secuencial con UI fluida
   for (let i = 0; i < files.length; i++) {
-    await uploadToCloudinary(files[i], i, files.length);
+    text.innerText = `Subiendo ${completed + 1} de ${files.length}`;
+
+    await new Promise(r => setTimeout(r, 50)); // 🔥 mejora visual
+
+    await uploadToCloudinary(files[i], i);
 
     completed++;
-
-    text.innerText = `Subiendo ${completed} de ${files.length}`;
   }
 
-  text.innerText = "🎉 Subida completada";
+  text.innerText = "🎉 ¡Tus fotos ya están en la galería!";
 
   setTimeout(() => {
     status.style.display = "none";
   }, 2000);
 
-  e.target.value = "";
-});
+  uploadBtn.disabled = false;
+  uploadBtn.innerText = "Comparte tus fotos";
 
-async function uploadToCloudinary(file, index, total) {
+  e.target.value = "";
+}
+
+// ================= UPLOAD FUNC =================
+
+async function uploadToCloudinary(file, index) {
   const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
   const formData = new FormData();
@@ -200,6 +219,8 @@ async function uploadToCloudinary(file, index, total) {
   const item = document.getElementById("upload-" + index);
 
   try {
+    item.querySelector("span").innerText = "⏳ Subiendo...";
+
     const res = await fetch(url, {
       method: "POST",
       body: formData
@@ -213,13 +234,10 @@ async function uploadToCloudinary(file, index, total) {
       body: JSON.stringify({ url: data.secure_url })
     });
 
-    // ✅ éxito
     item.querySelector("span").innerText = "✅ Subida";
 
   } catch (err) {
     console.error(err);
-
-    // ❌ error
     item.querySelector("span").innerText = "❌ Error";
   }
 }
@@ -228,6 +246,8 @@ async function uploadToCloudinary(file, index, total) {
 
 loadImages();
 setInterval(loadImages, 3000);
+
+// ================= EVENTOS =================
 
 document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("modal");
@@ -239,15 +259,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (modal) {
     modal.addEventListener("click", (e) => {
-      if (e.target.id === "modal") {
-        closeModal();
-      }
+      if (e.target.id === "modal") closeModal();
     });
   }
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeModal();
-    }
+    if (e.key === "Escape") closeModal();
   });
 });
