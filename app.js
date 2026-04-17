@@ -41,7 +41,6 @@ async function loadImages() {
 
     const latest = data.slice(0, 20);
 
-    // Primera carga
     if (isFirstLoad) {
       gallery.innerHTML = "";
       loadedImages.clear();
@@ -60,7 +59,6 @@ async function loadImages() {
       return;
     }
 
-    // Nuevas imágenes
     latest.forEach((url, index) => {
       if (!loadedImages.has(url)) {
         loadedImages.add(url);
@@ -72,7 +70,9 @@ async function loadImages() {
 
         gallery.prepend(img);
 
-        setTimeout(() => img.classList.remove("new-photo"), 500);
+        setTimeout(() => {
+          img.classList.remove("new-photo");
+        }, 600);
 
         while (gallery.children.length > 20) {
           const last = gallery.lastChild;
@@ -83,7 +83,7 @@ async function loadImages() {
     });
 
   } catch (err) {
-    console.error("Error cargando imágenes:", err);
+    console.error("❌ Error cargando imágenes:", err);
   }
 }
 
@@ -120,70 +120,63 @@ document.addEventListener("DOMContentLoaded", () => {
   const uploadBtn = document.getElementById("uploadBtn");
   const fileInput = document.getElementById("fileInput");
 
-  if (uploadBtn && fileInput) {
-    uploadBtn.onclick = () => fileInput.click();
+  if (!uploadBtn || !fileInput) return;
 
-    fileInput.addEventListener("change", async (e) => {
-      const files = Array.from(e.target.files);
-      if (!files.length) return;
+  uploadBtn.onclick = () => fileInput.click();
 
-      const status = document.getElementById("uploadStatus");
-      const text = document.getElementById("uploadText");
-      const list = document.getElementById("uploadList");
+  fileInput.addEventListener("change", async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-      status.style.display = "block";
-      text.innerText = "📦 Preparando fotos...";
-      list.innerHTML = "";
+    const status = document.getElementById("uploadStatus");
+    const text = document.getElementById("uploadText");
+    const list = document.getElementById("uploadList");
 
-      uploadBtn.disabled = true;
-      uploadBtn.innerText = "Subiendo fotos...";
+    status.style.display = "block";
+    text.innerText = "📦 Preparando fotos...";
+    list.innerHTML = "";
 
-      let completed = 0;
+    uploadBtn.disabled = true;
+    uploadBtn.innerText = "Subiendo fotos...";
 
-      // previews
-      files.forEach((file, index) => {
-        const div = document.createElement("div");
-        div.className = "upload-item";
-        div.id = "upload-" + index;
+    let completed = 0;
 
-        let preview = "";
-        try {
-          preview = URL.createObjectURL(file);
-        } catch {
-          preview = "";
-        }
+    // previews
+    files.forEach((file, index) => {
+      const div = document.createElement("div");
+      div.className = "upload-item";
+      div.id = "upload-" + index;
 
-        div.innerHTML = `
-          <img src="${preview}">
-          <span>📦 En espera...</span>
-        `;
+      const preview = URL.createObjectURL(file);
 
-        list.appendChild(div);
-      });
+      div.innerHTML = `
+        <img src="${preview}">
+        <span>📦 En espera...</span>
+      `;
 
-      // subida secuencial
-      for (let i = 0; i < files.length; i++) {
-        text.innerText = `Subiendo ${completed + 1} de ${files.length}`;
-
-        await new Promise(r => setTimeout(r, 50));
-
-        await uploadToCloudinary(files[i], i);
-
-        completed++;
-      }
-
-      text.innerText = "🎉 ¡Tus fotos ya están en la galería!";
-
-      setTimeout(() => {
-        status.style.display = "none";
-      }, 2000);
-
-      uploadBtn.disabled = false;
-      uploadBtn.innerText = "Comparte tus fotos";
-
-      e.target.value = "";
+      list.appendChild(div);
     });
-  }
+
+    // subida
+    for (let i = 0; i < files.length; i++) {
+      text.innerText = `Subiendo ${i + 1} de ${files.length}`;
+
+      await uploadToCloudinary(files[i], i);
+
+      completed++;
+    }
+
+    text.innerText = "🎉 ¡Tus fotos ya están en la galería!";
+
+    setTimeout(() => {
+      status.style.display = "none";
+    }, 2000);
+
+    uploadBtn.disabled = false;
+    uploadBtn.innerText = "Comparte tus fotos";
+
+    e.target.value = "";
+  });
 
   // ================= MODAL EVENTS =================
 
@@ -197,7 +190,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target.id === "modal") closeModal();
     });
 
-    // SWIPE
     modal.addEventListener("touchstart", (e) => {
       startX = e.touches[0].clientX;
     });
@@ -220,11 +212,54 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // teclado (PC)
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
 });
+
+// ================= UPLOAD FUNC =================
+
+async function uploadToCloudinary(file, index) {
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+  const item = document.getElementById("upload-" + index);
+
+  try {
+    item.querySelector("span").innerText = "⏳ Subiendo...";
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    formData.append("folder", folder);
+
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) {
+      throw new Error("Error Cloudinary: " + res.status);
+    }
+
+    const data = await res.json();
+
+    console.log("✅ Cloudinary OK:", data);
+
+    await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ url: data.secure_url })
+    });
+
+    item.querySelector("span").innerText = "✅ Subida";
+
+  } catch (err) {
+    console.error("❌ Error subiendo:", err);
+    item.querySelector("span").innerText = "❌ Error";
+  }
+}
 
 // ================= AUTO REFRESH =================
 
