@@ -12,9 +12,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-
-/* ================= BASE ================= */
-
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
@@ -22,14 +19,12 @@ body {
   text-align: center;
 }
 
-/* ================= CONTENEDOR ================= */
-
+/* CONTENEDOR */
 .container {
   margin-top: 40px;
 }
 
-/* ================= IMAGEN ================= */
-
+/* IMAGEN */
 .main-photo {
   width: 90%;
   max-width: 400px;
@@ -38,8 +33,7 @@ body {
   margin-bottom: 25px;
 }
 
-/* ================= COUNTDOWN ================= */
-
+/* COUNTDOWN */
 #countdown {
   display: flex;
   justify-content: center;
@@ -57,7 +51,7 @@ body {
 
 /* números */
 .time-box span {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
   color: #6b705c;
 }
@@ -79,18 +73,18 @@ body {
   50% { transform: scale(1.25); }
   100% { transform: scale(1); }
 }
-
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-  <!-- 📸 IMAGEN -->
+  <!-- IMAGEN -->
   <img src="https://codeno.com.mx/nuestra_boda_corregida.png" class="main-photo">
 
-  <!-- ⏳ CONTADOR -->
+  <!-- CONTADOR -->
   <div id="countdown">
 
     <div class="time-box">
@@ -119,139 +113,11 @@ body {
 
 <script>
 
-// 🔥 FECHA OBJETIVO (2:30 PM PST)
-const eventDate = new Date("2026-04-17T14:30:00-08:00").getTime();
+// 🔥 FECHA CORRECTA MEXICALI (PDT)
+const eventDate = new Date("2026-04-18T14:30:00-07:00").getTime();
 
 let lastValues = {};
 
-// actualizar
-function updateCountdown() {
-  const now = new Date().getTime();
-  const diff = eventDate - now;
-
-  if (diff <= 0) {
-    document.getElementById("countdown").innerHTML = "🎉 ¡Ya empezó!";
-    return;
-  }
-
-  const values = {
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((diff / (1000 * 60)) % 60),
-    seconds: Math.floor((diff / 1000) % 60)
-  };
-
-  for (let key in values) {
-    const el = document.getElementById(key);
-
-    if (lastValues[key] !== values[key]) {
-      el.classList.add("flip");
-      setTimeout(() => el.classList.remove("flip"), 300);
-    }
-
-    el.innerText = values[key];
-  }
-
-  lastValues = values;
-}
-
-setInterval(updateCountdown, 1000);
-updateCountdown();
-
-</script>
-
-</body>
-</html>  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-  margin-bottom: 25px;
-}
-
-/* ================= COUNTDOWN ================= */
-
-#countdown {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.time-box {
-  background: white;
-  padding: 15px;
-  border-radius: 15px;
-  min-width: 70px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-/* números */
-.time-box span {
-  font-size: 24px;
-  font-weight: 600;
-  color: #6b705c;
-}
-
-/* texto */
-.time-box p {
-  margin: 0;
-  font-size: 12px;
-  color: #888;
-}
-
-/* animación */
-.flip {
-  animation: pop 0.3s ease;
-}
-
-@keyframes pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.25); }
-  100% { transform: scale(1); }
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-  <!-- 📸 IMAGEN -->
-  <img src="https://codeno.com.mx/nuestra_boda_corregida.png" class="main-photo">
-
-  <!-- ⏳ CONTADOR -->
-  <div id="countdown">
-
-    <div class="time-box">
-      <span id="days">00</span>
-      <p>Días</p>
-    </div>
-
-    <div class="time-box">
-      <span id="hours">00</span>
-      <p>Horas</p>
-    </div>
-
-    <div class="time-box">
-      <span id="minutes">00</span>
-      <p>Min</p>
-    </div>
-
-    <div class="time-box">
-      <span id="seconds">00</span>
-      <p>Seg</p>
-    </div>
-
-  </div>
-
-</div>
-
-<script>
-
-// 🔥 FECHA OBJETIVO (2:30 PM PST)
-const eventDate = new Date("2026-04-17T14:30:00-08:00").getTime();
-
-let lastValues = {};
-
-// actualizar
 function updateCountdown() {
   const now = new Date().getTime();
   const diff = eventDate - now;
