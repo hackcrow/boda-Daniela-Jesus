@@ -17,14 +17,13 @@ body {
   font-family: 'Poppins', sans-serif;
   background: #fdfef5;
   text-align: center;
+  transition: opacity 0.5s ease;
 }
 
-/* CONTENEDOR */
 .container {
   margin-top: 40px;
 }
 
-/* IMAGEN */
 .main-photo {
   width: 90%;
   max-width: 400px;
@@ -33,12 +32,10 @@ body {
   margin-bottom: 25px;
 }
 
-/* COUNTDOWN */
 #countdown {
   display: flex;
   justify-content: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .time-box {
@@ -49,21 +46,18 @@ body {
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* números */
 .time-box span {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
   color: #6b705c;
 }
 
-/* texto */
 .time-box p {
   margin: 0;
   font-size: 12px;
   color: #888;
 }
 
-/* animación */
 .flip {
   animation: pop 0.3s ease;
 }
@@ -81,16 +75,11 @@ body {
 
 <div class="container">
 
-  <!-- IMAGEN -->
+  <!-- 📸 IMAGEN -->
   <img src="https://codeno.com.mx/nuestra_boda_corregida.png" class="main-photo">
 
-  <!-- CONTADOR -->
+  <!-- ⏳ CONTADOR -->
   <div id="countdown">
-
-    <div class="time-box">
-      <span id="days">00</span>
-      <p>Días</p>
-    </div>
 
     <div class="time-box">
       <span id="hours">00</span>
@@ -113,7 +102,16 @@ body {
 
 <script>
 
-const eventDate = new Date("2026-04-18T14:30:00-07:00").getTime();
+// 🔥 FECHA EXACTA (Mexicali - PDT UTC-7)
+const eventDate = new Date("2026-04-18T10:50:00-07:00").getTime();
+
+// 🔥 REDIRECCIÓN INMEDIATA (al abrir la página)
+const nowInitial = new Date().getTime();
+if (nowInitial >= eventDate) {
+  window.location.href = "./fiesta.html";
+}
+
+// ================= CONTADOR =================
 
 let lastValues = {};
 
@@ -121,16 +119,18 @@ function updateCountdown() {
   const now = new Date().getTime();
   const diff = eventDate - now;
 
+  // 🔥 REDIRECCIÓN SIEMPRE después de la hora
   if (diff <= 0) {
-    document.getElementById("countdown").innerHTML = "🎉 ¡Ya empezó!";
+    window.location.href = "./fiesta.html";
     return;
   }
 
+  const totalSeconds = Math.floor(diff / 1000);
+
   const values = {
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((diff / (1000 * 60)) % 60),
-    seconds: Math.floor((diff / 1000) % 60)
+    hours: Math.floor(totalSeconds / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60
   };
 
   for (let key in values) {
@@ -141,12 +141,13 @@ function updateCountdown() {
       setTimeout(() => el.classList.remove("flip"), 300);
     }
 
-    el.innerText = values[key];
+    el.innerText = String(values[key]).padStart(2, "0");
   }
 
   lastValues = values;
 }
 
+// 🔁 actualizar cada segundo
 setInterval(updateCountdown, 1000);
 updateCountdown();
 
