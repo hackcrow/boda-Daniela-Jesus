@@ -4,65 +4,172 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fotos Boda 📸</title>
-  
+<title>Cuenta regresiva 💍</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
-<!-- 🔤 FUENTES -->
-<!--<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
--->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./index.css?v=136">
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-<link rel="icon" href="./favicon.ico?v=2"  type="image/x-icon">
-<!-- opcional (mejor soporte) -->
-<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+<style>
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #fdfef5;
+  text-align: center;
+  transition: opacity 0.5s ease;
+}
+
+/* CONTENEDOR */
+.container {
+  margin-top: 40px;
+}
+
+/* IMAGEN */
+.main-photo {
+  width: 90%;
+  max-width: 400px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  margin-bottom: 25px;
+}
+
+/* COUNTDOWN */
+#countdown {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.time-box {
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  min-width: 70px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* números */
+.time-box span {
+  font-size: 26px;
+  font-weight: 600;
+  color: #6b705c;
+}
+
+/* texto */
+.time-box p {
+  margin: 0;
+  font-size: 12px;
+  color: #888;
+}
+
+/* animación */
+.flip {
+  animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+</style>
+
 </head>
 
 <body>
 
-<div class="top-section">
+<div class="container">
 
-  <div class="hero">
-    <img src="https://codeno.com.mx/nuestra_boda_corregida.png">
-  </div>
+  <!--  IMAGEN -->
+  <img src="https://codeno.com.mx/nuestra_boda_corregida.png" class="main-photo">
 
-  <div class="btn-wrapper">
-   <button id="uploadBtn" class="btn" style="font-family: 'Poppins', sans-serif;">
-      Comparte tus fotos
-    </button>
-  </div>
+  <!--  CONTADOR -->
+  <div id="countdown">
 
-  <p class="upload-hint" style="font-family: 'Quicksand', sans-serif;">
-  Puedes subir varias fotos al mismo tiempo!!
-</p>
+    <div class="time-box">
+      <span id="days">00</span>
+      <p>Días</p>
+    </div>
 
-  <div class="btn-wrapper">
-    <a href="galeria.html?v=3" class="btn">Ir a Galería</a>
+    <div class="time-box">
+      <span id="hours">00</span>
+      <p>Horas</p>
+    </div>
+
+    <div class="time-box">
+      <span id="minutes">00</span>
+      <p>Min</p>
+    </div>
+
+    <div class="time-box">
+      <span id="seconds">00</span>
+      <p>Seg</p>
+    </div>
+
   </div>
 
 </div>
 
-<input type="file" id="fileInput" multiple accept="image/*" hidden>
+<script>
 
-<div id="gallery"></div>
+//  FECHA EXACTA MEXICALI (PDT UTC-7)
+const eventDate = new Date("2026-04-18T14:30:00-07:00").getTime();
 
-<!-- MODAL -->
-<div id="modal">
-  <span id="closeModal">X</span>
-  <img id="modalImg">
-</div>
+let lastValues = {};
+let redirected = false;
 
-<!-- STATUS UPLOAD -->
-<div id="uploadStatus">
-  <p id="uploadText">Subiendo...</p>
-  <div id="uploadList"></div>
-</div>
+function updateCountdown() {
+  const now = new Date().getTime();
+  const diff = eventDate - now;
 
-<script src="./app.js?v=136"></script>
+  //  CUANDO LLEGA A 0
+  if (diff <= 0) {
+
+    document.getElementById("countdown").innerHTML = "🎉 ¡Ya empezó!";
+
+    // evitar múltiples redirecciones
+    if (!redirected) {
+      redirected = true;
+
+      // fade bonito
+      document.body.style.opacity = "0";
+
+      setTimeout(() => {
+        window.location.href = "./fiesta.html";
+      }, 800);
+    }
+
+    return;
+  }
+
+  const values = {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((diff / (1000 * 60)) % 60),
+    seconds: Math.floor((diff / 1000) % 60)
+  };
+
+  for (let key in values) {
+    const el = document.getElementById(key);
+
+    if (lastValues[key] !== values[key]) {
+      el.classList.add("flip");
+      setTimeout(() => el.classList.remove("flip"), 300);
+    }
+
+    el.innerText = values[key];
+  }
+
+  lastValues = values;
+}
+
+// actualizar cada segundo
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+</script>
 
 </body>
 </html>
