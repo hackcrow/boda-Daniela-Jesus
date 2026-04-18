@@ -1,141 +1,164 @@
-const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-const cloudName = "dazidfv1m";
-const uploadPreset = "fiesta-mia";
-const folder = "bodaDanielaJesus";
+<title>Cuenta regresiva 💍</title>
 
-let loadedImages = new Set();
-let isFirstLoad = true;
-window.audioEnabled = false;
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-// 🔊 activar audio
-document.addEventListener("click", () => {
-  window.audioEnabled = true;
-}, { once: true });
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-// ================= MODAL =================
-function openModal(url) {
-  const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modalImg");
+<style>
 
-  modal.style.display = "flex";
-  modalImg.src = url;
+/* ================= BASE ================= */
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #fdfef5;
+  text-align: center;
 }
 
-// ================= ANIMACIÓN =================
-function addImageAnimated(url) {
-  const img = document.createElement("img");
-  img.src = url;
+/* ================= CONTENEDOR ================= */
 
-  img.classList.add("new-photo");
-
-  img.onclick = () => openModal(url);
-
-  // 🔥 SIEMPRE ARRIBA
-  document.getElementById("gallery").prepend(img);
-
-  setTimeout(() => {
-    img.classList.remove("new-photo");
-  }, 700);
-
-  if (window.audioEnabled) {
-    new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3").play();
-  }
+.container {
+  margin-top: 40px;
 }
 
-// ================= LOAD =================
-async function loadImages() {
-  const res = await fetch(API_URL + "?t=" + Date.now());
-  const data = await res.json();
+/* ================= IMAGEN ================= */
 
-  const gallery = document.getElementById("gallery");
+.main-photo {
+  width: 90%;
+  max-width: 400px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  margin-bottom: 25px;
+}
 
-  // 🔥 ordenar: más nuevas primero
-  const ordered = [...data].reverse();
+/* ================= COUNTDOWN ================= */
 
-  // primera carga
-  if (isFirstLoad) {
-    gallery.innerHTML = "";
-    loadedImages.clear();
+#countdown {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
-    ordered.forEach(url => {
-      loadedImages.add(url);
+.time-box {
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  min-width: 70px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
 
-      const img = document.createElement("img");
-      img.src = url;
-      img.onclick = () => openModal(url);
+/* números */
+.time-box span {
+  font-size: 24px;
+  font-weight: 600;
+  color: #6b705c;
+}
 
-      // 🔥 usar prepend para consistencia
-      gallery.appendChild(img);
-    });
+/* texto */
+.time-box p {
+  margin: 0;
+  font-size: 12px;
+  color: #888;
+}
 
-    isFirstLoad = false;
+/* animación */
+.flip {
+  animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- 📸 IMAGEN -->
+  <img src="https://codeno.com.mx/nuestra_boda_corregida.png" class="main-photo">
+
+  <!-- ⏳ CONTADOR -->
+  <div id="countdown">
+
+    <div class="time-box">
+      <span id="days">00</span>
+      <p>Días</p>
+    </div>
+
+    <div class="time-box">
+      <span id="hours">00</span>
+      <p>Horas</p>
+    </div>
+
+    <div class="time-box">
+      <span id="minutes">00</span>
+      <p>Min</p>
+    </div>
+
+    <div class="time-box">
+      <span id="seconds">00</span>
+      <p>Seg</p>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+// 🔥 FECHA OBJETIVO (2:30 PM PST)
+const eventDate = new Date("2026-04-17T14:30:00-08:00").getTime();
+
+let lastValues = {};
+
+// actualizar
+function updateCountdown() {
+  const now = new Date().getTime();
+  const diff = eventDate - now;
+
+  if (diff <= 0) {
+    document.getElementById("countdown").innerHTML = "🎉 ¡Ya empezó!";
     return;
   }
 
-  // nuevas
-  ordered.forEach(url => {
-    if (!loadedImages.has(url)) {
-      loadedImages.add(url);
-      addImageAnimated(url);
-    }
-  });
-}
-
-// ================= UPLOAD =================
-async function uploadToCloudinary(file) {
-  const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-  formData.append("folder", folder);
-
-  const res = await fetch(url, {
-    method: "POST",
-    body: formData
-  });
-
-  const data = await res.json();
-
-  // 🔥 aparece arriba inmediatamente
-  addImageAnimated(data.secure_url);
-
-  await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url: data.secure_url })
-  });
-}
-
-// ================= INIT =================
-document.addEventListener("DOMContentLoaded", () => {
-
-  const fileInput = document.getElementById("fileInput");
-  const uploadBtn = document.getElementById("uploadBtn");
-
-  uploadBtn.onclick = () => fileInput.click();
-
-  fileInput.addEventListener("change", async (e) => {
-    const files = Array.from(e.target.files);
-
-    await Promise.all(files.map(uploadToCloudinary));
-
-    fileInput.value = "";
-  });
-
-  // cerrar modal
-  const modal = document.getElementById("modal");
-  const closeModal = document.getElementById("closeModal");
-
-  closeModal.onclick = () => modal.style.display = "none";
-
-  modal.onclick = (e) => {
-    if (e.target === modal) modal.style.display = "none";
+  const values = {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((diff / (1000 * 60)) % 60),
+    seconds: Math.floor((diff / 1000) % 60)
   };
 
-  loadImages();
-});
+  for (let key in values) {
+    const el = document.getElementById(key);
 
-// 🔄 auto refresh
-setInterval(loadImages, 3000);
+    if (lastValues[key] !== values[key]) {
+      el.classList.add("flip");
+      setTimeout(() => el.classList.remove("flip"), 300);
+    }
+
+    el.innerText = values[key];
+  }
+
+  lastValues = values;
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+</script>
+
+</body>
+</html>
