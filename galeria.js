@@ -9,6 +9,9 @@ let currentIndex = 0;
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
   resetModalState();
+  initEvents();
+  loadImages();
+  setInterval(loadImages, 3000);
 });
 
 window.addEventListener("pageshow", () => {
@@ -27,9 +30,7 @@ async function loadImages() {
   try {
     const res = await fetch(API_URL + "?t=" + Date.now());
 
-    if (!res.ok) {
-      throw new Error("Error API: " + res.status);
-    }
+    if (!res.ok) throw new Error("Error API");
 
     const data = await res.json();
     images = data;
@@ -61,8 +62,7 @@ async function loadImages() {
       return;
     }
 
-    // ================= NUEVAS IMÁGENES =================
-
+    // 🔥 NUEVAS IMÁGENES
     images.forEach((imgData, index) => {
       const url =
         typeof imgData === "string"
@@ -75,25 +75,14 @@ async function loadImages() {
 
       const img = document.createElement("img");
       img.src = url;
-
-      // 🔥 glow + animación
       img.classList.add("new-photo");
-
       img.onclick = () => openModal(index);
 
-      // 🔥 nuevas arriba
       gallery.prepend(img);
 
       setTimeout(() => {
         img.classList.remove("new-photo");
       }, 2000);
-
-      // 🔥 límite (opcional, puedes quitarlo)
-      while (gallery.children.length > 100) {
-        const last = gallery.lastChild;
-        loadedImages.delete(last.src);
-        gallery.removeChild(last);
-      }
     });
 
   } catch (err) {
@@ -136,11 +125,13 @@ function closeModal() {
 
 // ================= EVENTOS =================
 
-document.addEventListener("DOMContentLoaded", () => {
+function initEvents() {
   const closeBtn = document.getElementById("closeModal");
   const modal = document.getElementById("modal");
 
-  if (closeBtn) closeBtn.onclick = closeModal;
+  if (closeBtn) {
+    closeBtn.onclick = closeModal;
+  }
 
   if (modal) {
     modal.addEventListener("click", (e) => {
@@ -151,9 +142,4 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
-});
-
-// ================= AUTO REFRESH =================
-
-loadImages();
-setInterval(loadImages, 3000);
+}
