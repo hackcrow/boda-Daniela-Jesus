@@ -7,15 +7,25 @@ const folder = "bodaDanielaJesus";
 let images = [];
 let loadedImages = new Set();
 let currentIndex = 0;
+let isFirstLoad = true;
 let startX = 0;
 
 // ================= INIT =================
 
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
-  loadImages();
-  setInterval(loadImages, 3000);
+  resetModal();
 });
+
+window.addEventListener("pageshow", () => {
+  resetModal();
+});
+
+function resetModal() {
+  const modal = document.getElementById("modal");
+  if (modal) modal.classList.remove("active");
+  document.body.classList.remove("modal-open");
+}
 
 // ================= LOAD =================
 
@@ -29,42 +39,73 @@ async function loadImages() {
     const gallery = document.getElementById("gallery");
     if (!gallery) return;
 
-    gallery.innerHTML = "";
+    const latest = data.slice(0, 20);
 
-    data.forEach((item, index) => {
+    // Primera carga
+    if (isFirstLoad) {
+      gallery.innerHTML = "";
+      loadedImages.clear();
+
+      latest.forEach((item, index) => {
+        const url = typeof item === "string" ? item : item?.url;
+        if (!url) return;
+
+        loadedImages.add(url);
+
+        const el = createMediaElement(url, index);
+        gallery.appendChild(el);
+      });
+
+      isFirstLoad = false;
+      return;
+    }
+
+    // Nuevos elementos
+    latest.forEach((item, index) => {
       const url = typeof item === "string" ? item : item?.url;
       if (!url) return;
 
-      const el = createMedia(url, index);
-      gallery.appendChild(el);
+      if (!loadedImages.has(url)) {
+        loadedImages.add(url);
+
+        const el = createMediaElement(url, index);
+        el.classList.add("new-photo");
+
+        gallery.prepend(el);
+
+        setTimeout(() => {
+          el.classList.remove("new-photo");
+        }, 4000);
+
+        // limitar a 20
+        while (gallery.children.length > 20) {
+          const last = gallery.lastChild;
+          loadedImages.delete(last.src || last.querySelector("source")?.src);
+          gallery.removeChild(last);
+        }
+      }
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error cargando:", err);
   }
 }
 
-// ================= MEDIA =================
+// ================= CREAR IMG / VIDEO =================
 
-function isVideo(url) {
-  return url.match(/\.(mp4|webm|mov|ogg)$/i);
-}
-
-function createMedia(url, index) {
-  let el;
-
-  if (isVideo(url)) {
-    el = document.createElement("video");
-    el.src = url;
-    el.muted = true;
-    el.playsInline = true;
+function createMediaElement(url, index) {
+  if (url.includes(".mp4") || url.includes(".mov")) {
+    const video = document.createElement("video");
+    video.src = url;
+    video.controls = true;
+    video.onclick = () => openModal(index);
+    return video;
   } else {
-    el = document.createElement("img");
-    el.src = url;
+    const img = document.createElement("img");
+    img.src = url;
+    img.onclick = () => openModal(index);
+    return img;
   }
-
-  el.onclick = () => openModal(index);
-  return el;
 }
 
 // ================= MODAL =================
@@ -73,120 +114,191 @@ function openModal(index) {
   currentIndex = index;
 
   const modal = document.getElementById("modal");
-  const container = document.getElementById("modalContent");
+  const modalImg = document.getElementById("modalImg");
+
+  if (!modal || !modalImg) return;
 
   const item = images[index];
   const url = typeof item === "string" ? item : item?.url;
 
-  container.innerHTML = "";
-
-  if (isVideo(url)) {
-    const video = document.createElement("video");
-    video.src = url;
-    video.controls = true;
-    video.autoplay = true;
-
-    container.appendChild(video);
-  } else {
-    const img = document.createElement("img");
-    img.src = url;
-
-    container.appendChild(img);
-  }
-
   modal.classList.add("active");
+  modalImg.src = url;
+
+  document.body.classList.add("modal-open");
 }
 
-// cerrar modal
-document.getElementById("closeModal").onclick = () => {
-  document.getElementById("modal").classList.remove("active");
-};
+function closeModal() {
+  const modal = document.getElementById("modal");
+  if (!modal) return;
 
-document.getElementById("modal").onclick = (e) => {
-  if (e.target.id === "modal") {
-    document.getElementById("modal").classList.remove("active");
-  }
-};
+  modal.classList.remove("active");
+  document.body.classList.remove("modal-open");
+}
 
 // ================= UPLOAD =================
 
-document.getElementById("uploadBtn").onclick = () => {
-  document.getElementById("fileInput").click();
-};
+document.addEventListener("DOMContentLoaded", () => {
+  const uploadBtn = document.getElementById("uploadBtn");
+  const fileInput = document.getElementById("fileInput");
 
-document.getElementById("fileInput").addEventListener("change", async (e) => {
-  const files = Array.from(e.target.files);
-  if (!files.length) return;
+  if (!uploadBtn || !fileInput) return;
 
-  const status = document.getElementById("uploadStatus");
-  const text = document.getElementById("uploadText");
-  const list = document.getElementById("uploadList");
+  uploadBtn.onclick = () => fileInput.click();
 
-  status.style.display = "block";
-  list.innerHTML = "";
+  fileInput.addEventListener("change", async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-  for (let i = 0; i < files.length; i++) {
-    const div = document.createElement("div");
-    div.className = "upload-item";
+    const status = document.getElementById("uploadStatus");
+    const text = document.getElementById("uploadText");
+    const list = document.getElementById("uploadList");
 
-    div.innerHTML = `<span>⏳ Subiendo ${files[i].name}</span>`;
-    list.appendChild(div);
+    status.style.display = "block";
+    text.innerText = "📦 Preparando...";
+    list.innerHTML = "";
 
-    await upload(files[i]);
+    uploadBtn.disabled = true;
+    uploadBtn.innerText = "Subiendo...";
+
+    // previews
+    files.forEach((file, index) => {
+      const div = document.createElement("div");
+      div.className = "upload-item";
+      div.id = "upload-" + index;
+
+      const preview = URL.createObjectURL(file);
+
+      div.innerHTML = `
+        ${file.type.startsWith("video") 
+          ? `<video src="${preview}" width="40" height="40"></video>` 
+          : `<img src="${preview}">`}
+        <span>📦 En espera...</span>
+      `;
+
+      list.appendChild(div);
+    });
+
+    // subir uno por uno
+    for (let i = 0; i < files.length; i++) {
+      text.innerText = `Subiendo ${i + 1} de ${files.length}`;
+      await uploadToCloudinary(files[i], i);
+    }
+
+    text.innerText = "🎉 ¡Listo!";
+
+    setTimeout(() => {
+      status.style.display = "none";
+    }, 2000);
+
+    uploadBtn.disabled = false;
+    uploadBtn.innerText = "Comparte tus fotos";
+
+    e.target.value = "";
+  });
+
+  // modal eventos
+  const modal = document.getElementById("modal");
+  const closeBtn = document.getElementById("closeModal");
+
+  if (closeBtn) closeBtn.onclick = closeModal;
+
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target.id === "modal") closeModal();
+    });
+
+    modal.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+    });
+
+    modal.addEventListener("touchend", (e) => {
+      if (!images.length) return;
+
+      let diff = startX - e.changedTouches[0].clientX;
+
+      if (diff > 50) currentIndex++;
+      if (diff < -50) currentIndex--;
+
+      if (currentIndex < 0) currentIndex = images.length - 1;
+      if (currentIndex >= images.length) currentIndex = 0;
+
+      const item = images[currentIndex];
+      const url = typeof item === "string" ? item : item?.url;
+
+      document.getElementById("modalImg").src = url;
+    });
   }
 
-  text.innerText = "🎉 Listo!";
-  setTimeout(() => status.style.display = "none", 2000);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
 });
 
-// ================= CLOUDINARY =================
+// ================= UPLOAD REAL (PROGRESO %) =================
 
 async function uploadToCloudinary(file, index) {
   const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
   const item = document.getElementById("upload-" + index);
+  const span = item.querySelector("span");
 
-  try {
-    item.querySelector("span").innerText = "⏳ Subiendo...";
+  // límite tamaño
+  if (file.size > 100 * 1024 * 1024) {
+    span.innerText = "❌ Muy pesado (máx 100MB)";
+    return;
+  }
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", uploadPreset);
     formData.append("folder", folder);
 
-    // 🔥 IMPORTANTE para videos grandes
-    formData.append("resource_type", "auto");
+    xhr.open("POST", url);
 
-    const res = await fetch(url, {
-      method: "POST",
-      body: formData
-    });
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        span.innerText = `⏳ ${percent}%`;
+      }
+    };
 
-    if (!res.ok) {
-      throw new Error("Error Cloudinary: " + res.status);
-    }
+    xhr.onload = async () => {
+      try {
+        const data = JSON.parse(xhr.responseText);
 
-    const data = await res.json();
+        if (!data.secure_url) throw new Error("No URL");
 
-    console.log("🔥 Cloudinary response:", data);
+        await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ url: data.secure_url })
+        });
 
-    if (!data.secure_url) {
-      throw new Error("No URL recibida");
-    }
+        span.innerText = "✅ Subida";
+        resolve();
 
-    // guardar en tu API
-    await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ url: data.secure_url })
-    });
+      } catch (err) {
+        console.error(err);
+        span.innerText = "❌ Error";
+        reject(err);
+      }
+    };
 
-    item.querySelector("span").innerText = "✅ Subida";
+    xhr.onerror = () => {
+      span.innerText = "❌ Error red";
+      reject();
+    };
 
-  } catch (err) {
-    console.error("❌ ERROR REAL:", err);
-    item.querySelector("span").innerText = "❌ Error";
-  }
+    xhr.send(formData);
+  });
 }
+
+// ================= AUTO REFRESH =================
+
+loadImages();
+setInterval(loadImages, 3000);
