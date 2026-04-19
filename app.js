@@ -141,26 +141,52 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
 
 // ================= CLOUDINARY =================
 
-async function upload(file) {
+async function uploadToCloudinary(file, index) {
   const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-  formData.append("folder", folder);
+  const item = document.getElementById("upload-" + index);
 
-  const res = await fetch(url, {
-    method: "POST",
-    body: formData
-  });
+  try {
+    item.querySelector("span").innerText = "⏳ Subiendo...";
 
-  const data = await res.json();
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    formData.append("folder", folder);
 
-  await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ url: data.secure_url })
-  });
+    // 🔥 IMPORTANTE para videos grandes
+    formData.append("resource_type", "auto");
+
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) {
+      throw new Error("Error Cloudinary: " + res.status);
+    }
+
+    const data = await res.json();
+
+    console.log("🔥 Cloudinary response:", data);
+
+    if (!data.secure_url) {
+      throw new Error("No URL recibida");
+    }
+
+    // guardar en tu API
+    await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ url: data.secure_url })
+    });
+
+    item.querySelector("span").innerText = "✅ Subida";
+
+  } catch (err) {
+    console.error("❌ ERROR REAL:", err);
+    item.querySelector("span").innerText = "❌ Error";
+  }
 }
