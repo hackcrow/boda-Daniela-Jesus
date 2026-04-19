@@ -5,65 +5,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Daniela & Jesus</title>
-  
+
+<!-- 🔤 FUENTES -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
-<!-- 🔤 FUENTES -->
-<!--<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
--->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./index.css?v=136">
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
 
-<link rel="icon" href="./favicon.ico?v=2"  type="image/x-icon">
-<!-- opcional (mejor soporte) -->
-<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+<link rel="stylesheet" href="./index.css?v=200">
+
+<!-- 🔥 FAVICON -->
+<link rel="icon" href="./favicon.ico?v=3" type="image/x-icon">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png?v=3">
+<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png?v=3">
+
 </head>
 
 <body>
 
 <div class="top-section">
 
+  <!-- HERO -->
   <div class="hero">
-    <img src="https://codeno.com.mx/nuestra_boda_corregida.png">
+    <img src="https://codeno.com.mx/nuestra_boda_corregida.png" alt="Boda Daniela y Jesús">
   </div>
 
+  <!-- BOTÓN SUBIR -->
   <div class="btn-wrapper">
-   <button id="uploadBtn" class="btn" style="font-family: 'Poppins', sans-serif;">
-      Comparte tus fotos
+    <button id="uploadBtn" class="btn btn-main">
+      Comparte tus fotos o videos
     </button>
   </div>
 
-  <p class="upload-hint" style="font-family: 'Quicksand', sans-serif;">
-  Puedes subir varias fotos al mismo tiempo!!
-</p>
+  <!-- TEXTO -->
+  <p class="upload-hint">
+    Puedes subir varias fotos o videos al mismo tiempo 🎉
+  </p>
 
+  <!-- GALERÍA -->
   <div class="btn-wrapper">
-    <a href="galeria.html?v=3" class="btn">Ir a Galería</a>
+    <a href="galeria.html?v=10" class="btn btn-secondary">
+      Ir a Galería
+    </a>
   </div>
 
 </div>
 
-<input type="file" id="fileInput" multiple accept="image/*" hidden>
+<!-- 🔥 IMPORTANTE: ahora acepta video -->
+<input type="file" id="fileInput" multiple accept="image/*,video/*" hidden>
 
 <div id="gallery"></div>
 
 <!-- MODAL -->
 <div id="modal">
-  <span id="closeModal">X</span>
-  <img id="modalImg">
+  <span id="closeModal">✕</span>
+  <div id="modalContent"></div>
 </div>
 
-<!-- STATUS UPLOAD -->
+<!-- STATUS -->
 <div id="uploadStatus">
   <p id="uploadText">Subiendo...</p>
   <div id="uploadList"></div>
 </div>
 
-<script src="./app.js?v=136"></script>
+<script src="./app.js?v=200"></script>
 
 </body>
 </html>
-
