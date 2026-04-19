@@ -6,53 +6,50 @@
 
 <title>Daniela & Jesus</title>
 
-<!-- 🔤 FUENTES -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="./index.css?v=200">
+<link rel="stylesheet" href="./index.css?v=300">
 
-<!-- 🔥 FAVICON -->
-<link rel="icon" href="./favicon.ico?v=3" type="image/x-icon">
-<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png?v=3">
-<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png?v=3">
-
+<link rel="icon" href="./favicon.ico?v=3">
 </head>
 
 <body>
 
 <div class="top-section">
 
-  <!-- HERO -->
   <div class="hero">
-    <img src="https://codeno.com.mx/nuestra_boda_corregida.png" alt="Boda Daniela y Jesús">
+    <img src="https://codeno.com.mx/nuestra_boda_corregida.png">
   </div>
 
-  <!-- BOTÓN SUBIR -->
   <div class="btn-wrapper">
     <button id="uploadBtn" class="btn btn-main">
-      Comparte tus fotos o videos
+      Subir fotos o videos
     </button>
   </div>
 
-  <!-- TEXTO -->
   <p class="upload-hint">
     Puedes subir varias fotos o videos al mismo tiempo 🎉
   </p>
 
-  <!-- GALERÍA -->
   <div class="btn-wrapper">
-    <a href="galeria.html?v=10" class="btn btn-secondary">
+    <a href="galeria.html?v=20" class="btn btn-secondary">
       Ir a Galería
     </a>
   </div>
 
 </div>
 
-<!-- 🔥 IMPORTANTE: ahora acepta video -->
-<input type="file" id="fileInput" multiple accept="image/*,video/*" hidden>
+<input 
+  type="file" 
+  id="fileInput" 
+  multiple 
+  accept="image/*,video/*"
+  capture="environment"
+  hidden
+>
 
 <div id="gallery"></div>
 
@@ -68,7 +65,7 @@
   <div id="uploadList"></div>
 </div>
 
-<script src="./app.js?v=210"></script>
+<script src="./app.js?v=300"></script>
 
 </body>
 </html>
