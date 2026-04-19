@@ -3,7 +3,6 @@ const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 let images = [];
 let loadedImages = new Set();
 let currentIndex = 0;
-let isFirstLoad = true;
 
 // ================= INIT =================
 
@@ -32,60 +31,68 @@ async function loadImages() {
       throw new Error("Error API: " + res.status);
     }
 
-    images = await res.json();
+    const data = await res.json();
+    images = data;
 
     const gallery = document.getElementById("gallery");
-    gallery.innerHTML = "";
+    if (!gallery) return;
 
-    // 👇 AQUÍ VA TU CÓDIGO CORREGIDO
+    // 🔥 PRIMERA CARGA
+    if (loadedImages.size === 0) {
+      gallery.innerHTML = "";
+
+      images.forEach((imgData, index) => {
+        const url =
+          typeof imgData === "string"
+            ? imgData
+            : imgData?.url;
+
+        if (!url) return;
+
+        loadedImages.add(url);
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.onclick = () => openModal(index);
+
+        gallery.appendChild(img);
+      });
+
+      return;
+    }
+
+    // ================= NUEVAS IMÁGENES =================
+
     images.forEach((imgData, index) => {
-
       const url =
         typeof imgData === "string"
           ? imgData
           : imgData?.url;
 
-      if (!url) return;
+      if (!url || loadedImages.has(url)) return;
+
+      loadedImages.add(url);
 
       const img = document.createElement("img");
       img.src = url;
+
+      // 🔥 glow + animación
+      img.classList.add("new-photo");
+
       img.onclick = () => openModal(index);
 
-      gallery.appendChild(img);
-    });
+      // 🔥 nuevas arriba
+      gallery.prepend(img);
 
-  } catch (err) {
-    console.error("Error cargando imágenes:", err);
-  }
-}
+      setTimeout(() => {
+        img.classList.remove("new-photo");
+      }, 2000);
 
-    // ================= NUEVAS IMÁGENES =================
-    latest.forEach((url, index) => {
-      if (!loadedImages.has(url)) {
-        loadedImages.add(url);
-
-        const img = document.createElement("img");
-        img.src = url;
-
-        // 🔥 animación glow + zoom
-        img.classList.add("new-photo");
-
-        img.onclick = () => openModal(index);
-
-        // 🔥 meter arriba
-        gallery.prepend(img);
-
-        // quitar animación después
-        setTimeout(() => {
-          img.classList.remove("new-photo");
-        }, 2000);
-
-        // 🔥 limitar cantidad
-        while (gallery.children.length > 50) {
-          const last = gallery.lastChild;
-          loadedImages.delete(last.src);
-          gallery.removeChild(last);
-        }
+      // 🔥 límite (opcional, puedes quitarlo)
+      while (gallery.children.length > 100) {
+        const last = gallery.lastChild;
+        loadedImages.delete(last.src);
+        gallery.removeChild(last);
       }
     });
 
@@ -111,7 +118,7 @@ function openModal(index) {
       ? imgData
       : imgData?.url;
 
-  if (!url) return; // 🔥 evita errores si algo viene mal
+  if (!url) return;
 
   modal.classList.add("active");
   modalImg.src = url;
@@ -121,21 +128,32 @@ function openModal(index) {
 
 function closeModal() {
   const modal = document.getElementById("modal");
+  if (!modal) return;
 
   modal.classList.remove("active");
   document.body.classList.remove("modal-open");
 }
 
-// cerrar con X
-document.getElementById("closeModal").onclick = closeModal;
+// ================= EVENTOS =================
 
-// cerrar tocando fondo
-document.getElementById("modal").onclick = (e) => {
-  if (e.target.id === "modal") closeModal();
-};
+document.addEventListener("DOMContentLoaded", () => {
+  const closeBtn = document.getElementById("closeModal");
+  const modal = document.getElementById("modal");
+
+  if (closeBtn) closeBtn.onclick = closeModal;
+
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target.id === "modal") closeModal();
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+});
 
 // ================= AUTO REFRESH =================
 
-// 🔥 cada 3 segundos
 loadImages();
 setInterval(loadImages, 3000);
