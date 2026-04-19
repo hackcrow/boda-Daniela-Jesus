@@ -27,34 +27,37 @@ function resetModalState() {
 async function loadImages() {
   try {
     const res = await fetch(API_URL + "?t=" + Date.now());
-    const data = await res.json();
 
-    images = data;
+    if (!res.ok) {
+      throw new Error("Error API: " + res.status);
+    }
+
+    images = await res.json();
 
     const gallery = document.getElementById("gallery");
-    if (!gallery) return;
+    gallery.innerHTML = "";
 
-    // 🔥 SOLO primeras 50 (puedes ajustar)
-    const latest = data.slice(0, 50);
+    // 👇 AQUÍ VA TU CÓDIGO CORREGIDO
+    images.forEach((imgData, index) => {
 
-    // ================= PRIMERA CARGA =================
-    if (isFirstLoad) {
-      gallery.innerHTML = "";
-      loadedImages.clear();
+      const url =
+        typeof imgData === "string"
+          ? imgData
+          : imgData?.url;
 
-      latest.forEach((url, index) => {
-        loadedImages.add(url);
+      if (!url) return;
 
-        const img = document.createElement("img");
-        img.src = url;
-        img.onclick = () => openModal(index);
+      const img = document.createElement("img");
+      img.src = url;
+      img.onclick = () => openModal(index);
 
-        gallery.appendChild(img);
-      });
+      gallery.appendChild(img);
+    });
 
-      isFirstLoad = false;
-      return;
-    }
+  } catch (err) {
+    console.error("Error cargando imágenes:", err);
+  }
+}
 
     // ================= NUEVAS IMÁGENES =================
     latest.forEach((url, index) => {
@@ -99,8 +102,16 @@ function openModal(index) {
   const modal = document.getElementById("modal");
   const modalImg = document.getElementById("modalImg");
 
+  if (!modal || !modalImg) return;
+
   const imgData = images[index];
-  const url = typeof imgData === "string" ? imgData : imgData?.url;
+
+  const url =
+    typeof imgData === "string"
+      ? imgData
+      : imgData?.url;
+
+  if (!url) return; // 🔥 evita errores si algo viene mal
 
   modal.classList.add("active");
   modalImg.src = url;
