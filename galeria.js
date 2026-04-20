@@ -3,23 +3,6 @@ const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 let images = [];
 let currentIndex = 0;
 
-// ================= INIT =================
-
-window.addEventListener("load", () => {
-  document.body.classList.add("loaded");
-  resetModalState();
-});
-
-window.addEventListener("pageshow", () => {
-  resetModalState();
-});
-
-function resetModalState() {
-  const modal = document.getElementById("modal");
-  if (modal) modal.classList.remove("active");
-  document.body.classList.remove("modal-open");
-}
-
 // ================= LOAD =================
 
 async function loadImages() {
@@ -30,7 +13,10 @@ async function loadImages() {
     images = data;
 
     const gallery = document.getElementById("gallery");
-    if (!gallery) return;
+    if (!gallery) {
+      console.error("❌ No existe #gallery");
+      return;
+    }
 
     gallery.innerHTML = "";
 
@@ -38,48 +24,32 @@ async function loadImages() {
       const url = typeof item === "string" ? item : item?.url;
       if (!url) return;
 
-      const el = createMediaElement(url, index);
+      let el;
+
+      // 🎥 VIDEO
+      if (url.match(/\.(mp4|mov|webm)$/i)) {
+        el = document.createElement("video");
+        el.src = url;
+        el.muted = true;
+        el.playsInline = true;
+        el.controls = true;
+      } 
+      // 🖼 IMAGEN
+      else {
+        el = document.createElement("img");
+        el.src = url;
+      }
+
+      el.style.width = "100%";
+      el.style.marginBottom = "10px";
+      el.onclick = () => openModal(index);
+
       gallery.appendChild(el);
     });
 
   } catch (err) {
-    console.error("❌ Error cargando galería:", err);
+    console.error("❌ Error:", err);
   }
-}
-
-// ================= CREAR IMG / VIDEO =================
-
-function createMediaElement(url, index) {
-
-  // 🎥 VIDEO
-  if (url.match(/\.(mp4|mov|webm)$/i)) {
-    const video = document.createElement("video");
-
-    video.src = url;
-    video.playsInline = true;
-    video.muted = true;
-    video.loop = true;
-
-    // 🔥 preview automático tipo app
-    video.addEventListener("mouseenter", () => video.play());
-    video.addEventListener("mouseleave", () => video.pause());
-
-    // 📱 iPhone autoplay fix
-    video.addEventListener("loadeddata", () => {
-      video.play().catch(() => {});
-    });
-
-    video.onclick = () => openModal(index);
-
-    return video;
-  }
-
-  // 🖼 IMAGEN
-  const img = document.createElement("img");
-  img.src = url;
-  img.onclick = () => openModal(index);
-
-  return img;
 }
 
 // ================= MODAL =================
@@ -90,48 +60,47 @@ function openModal(index) {
   const modal = document.getElementById("modal");
   const modalContent = document.getElementById("modalContent");
 
-  if (!modal || !modalContent) return;
+  if (!modal || !modalContent) {
+    console.error("❌ Modal no existe");
+    return;
+  }
 
   const item = images[index];
   const url = typeof item === "string" ? item : item?.url;
 
   modalContent.innerHTML = "";
 
-  // 🎥 VIDEO en modal
   if (url.match(/\.(mp4|mov|webm)$/i)) {
     const video = document.createElement("video");
     video.src = url;
     video.controls = true;
     video.autoplay = true;
-    video.playsInline = true;
+    video.style.width = "100%";
 
     modalContent.appendChild(video);
-  } 
-  // 🖼 IMAGEN en modal
-  else {
+  } else {
     const img = document.createElement("img");
     img.src = url;
+    img.style.width = "100%";
 
     modalContent.appendChild(img);
   }
 
-  modal.classList.add("active");
-  document.body.classList.add("modal-open");
+  modal.style.display = "flex";
 }
+
+// ================= CLOSE =================
 
 function closeModal() {
   const modal = document.getElementById("modal");
-  if (!modal) return;
-
-  modal.classList.remove("active");
-  document.body.classList.remove("modal-open");
+  modal.style.display = "none";
 }
 
-// ================= EVENTOS =================
+// ================= EVENTS =================
 
 document.addEventListener("DOMContentLoaded", () => {
-  const modal = document.getElementById("modal");
   const closeBtn = document.getElementById("closeModal");
+  const modal = document.getElementById("modal");
 
   if (closeBtn) closeBtn.onclick = closeModal;
 
@@ -141,12 +110,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModal();
-  });
+  loadImages();
 });
-
-// ================= AUTO REFRESH =================
-
-loadImages();
-setInterval(loadImages, 3000);
