@@ -134,3 +134,31 @@ body.modal-open > *:not(#modal) {
   display: none;
   cursor: pointer;
 }
+
+
+/* ================= GALERÍA MEDIA ================= */
+
+/* 🔥 videos se comportan igual que imágenes */
+#gallery video {
+  width: 100%;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  break-inside: avoid;
+}
+
+/* ================= MODAL MEDIA ================= */
+
+/* 🔥 imagen en modal */
+#modal img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* 🔥 video en modal */
+#modal video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
