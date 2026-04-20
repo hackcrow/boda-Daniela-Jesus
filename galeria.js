@@ -2,13 +2,28 @@ const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 
 let images = [];
 let loadedSet = new Set();
-let currentIndex = 0;
 
 // ================= INIT =================
 
 window.addEventListener("load", () => {
   document.body.classList.add("loaded");
 });
+
+// ================= HELPERS =================
+
+// 🔥 obtener timestamp desde Cloudinary
+function getTimestamp(url) {
+  const match = url.match(/\/v(\d+)\//);
+  return match ? parseInt(match[1]) : 0;
+}
+
+// 🔥 convertir videos a mp4 compatible
+function fixVideoUrl(url) {
+  if (url.includes("/video/upload/")) {
+    return url.replace("/upload/", "/upload/f_mp4/");
+  }
+  return url;
+}
 
 // ================= LOAD =================
 
@@ -20,15 +35,24 @@ async function loadImages() {
     const gallery = document.getElementById("gallery");
     if (!gallery) return;
 
+    // 🔥 ordenar por más recientes
+    data.sort((a, b) => {
+      const urlA = typeof a === "string" ? a : a?.url;
+      const urlB = typeof b === "string" ? b : b?.url;
+
+      return getTimestamp(urlB) - getTimestamp(urlA);
+    });
+
     images = data;
 
-    data.forEach((item, index) => {
-      const url = typeof item === "string" ? item : item?.url;
-      if (!url) return;
+    data.forEach((item) => {
+      const rawUrl = typeof item === "string" ? item : item?.url;
+      if (!rawUrl) return;
 
-      // 🔥 ya existe → no lo agregues
+      const url = fixVideoUrl(rawUrl);
+
+      // 🔥 evitar duplicados
       if (loadedSet.has(url)) return;
-
       loadedSet.add(url);
 
       let el;
@@ -47,16 +71,17 @@ async function loadImages() {
         el.src = url;
       }
 
-      // ❌ si falla, lo quitamos
+      // ❌ si falla, eliminar
       el.onerror = () => {
         el.remove();
         loadedSet.delete(url);
       };
 
-      el.onclick = () => openModal(index);
+      // 🔥 abrir modal con URL directa (sin index bug)
+      el.onclick = () => openModal(url);
 
-      // 🔥 SI ES NUEVA → arriba
-      gallery.prepend(el);
+      // 🔥 agregar en orden correcto
+      gallery.appendChild(el);
     });
 
   } catch (err) {
@@ -66,32 +91,34 @@ async function loadImages() {
 
 // ================= MODAL =================
 
-function openModal(index) {
-  currentIndex = index;
-
+function openModal(url) {
   const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modalImg");
+  let modalMedia = document.getElementById("modalImg");
 
-  const item = images[index];
-  const url = typeof item === "string" ? item : item?.url;
+  if (!modal || !modalMedia) return;
 
-  if (!modal || !modalImg) return;
+  const fixedUrl = fixVideoUrl(url);
+
+  // 🔥 limpiar contenido anterior
+  const newMedia = modalMedia.cloneNode();
+  modalMedia.replaceWith(newMedia);
+  modalMedia = newMedia;
 
   // 🎥 VIDEO
-  if (url.match(/\.(mp4|mov|webm)$/i)) {
+  if (fixedUrl.match(/\.(mp4|mov|webm)$/i)) {
     const video = document.createElement("video");
-    video.src = url;
+    video.src = fixedUrl;
     video.controls = true;
     video.autoplay = true;
     video.style.maxWidth = "100%";
     video.style.maxHeight = "100%";
 
-    modalImg.replaceWith(video);
+    newMedia.replaceWith(video);
     video.id = "modalImg";
   } 
   // 🖼 IMAGEN
   else {
-    modalImg.src = url;
+    newMedia.src = fixedUrl;
   }
 
   modal.classList.add("active");
@@ -130,4 +157,4 @@ document.addEventListener("DOMContentLoaded", () => {
 // ================= AUTO REFRESH =================
 
 loadImages();
-setInterval(loadImages, 5000); // 🔥 más relajado (antes 3000)
+setInterval(loadImages, 5000);
