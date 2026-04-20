@@ -1,23 +1,19 @@
 const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 
 let images = [];
-let currentIndex = 0;
 
 // ================= LOAD =================
 
 async function loadImages() {
   try {
-    const res = await fetch(API_URL + "?t=" + Date.now());
+    const res = await fetch(API_URL);
     const data = await res.json();
+
+    console.log("DATA:", data); // 👈 DEBUG
 
     images = data;
 
     const gallery = document.getElementById("gallery");
-    if (!gallery) {
-      console.error("❌ No existe #gallery");
-      return;
-    }
-
     gallery.innerHTML = "";
 
     images.forEach((item, index) => {
@@ -30,40 +26,29 @@ async function loadImages() {
       if (url.match(/\.(mp4|mov|webm)$/i)) {
         el = document.createElement("video");
         el.src = url;
+        el.controls = true;
         el.muted = true;
         el.playsInline = true;
-        el.controls = true;
-      } 
-      // 🖼 IMAGEN
-      else {
+      } else {
         el = document.createElement("img");
         el.src = url;
       }
 
-      el.style.width = "100%";
-      el.style.marginBottom = "10px";
       el.onclick = () => openModal(index);
 
       gallery.appendChild(el);
     });
 
   } catch (err) {
-    console.error("❌ Error:", err);
+    console.error("❌ ERROR:", err);
   }
 }
 
 // ================= MODAL =================
 
 function openModal(index) {
-  currentIndex = index;
-
   const modal = document.getElementById("modal");
   const modalContent = document.getElementById("modalContent");
-
-  if (!modal || !modalContent) {
-    console.error("❌ Modal no existe");
-    return;
-  }
 
   const item = images[index];
   const url = typeof item === "string" ? item : item?.url;
@@ -75,14 +60,10 @@ function openModal(index) {
     video.src = url;
     video.controls = true;
     video.autoplay = true;
-    video.style.width = "100%";
-
     modalContent.appendChild(video);
   } else {
     const img = document.createElement("img");
     img.src = url;
-    img.style.width = "100%";
-
     modalContent.appendChild(img);
   }
 
@@ -91,24 +72,16 @@ function openModal(index) {
 
 // ================= CLOSE =================
 
-function closeModal() {
-  const modal = document.getElementById("modal");
-  modal.style.display = "none";
-}
+document.getElementById("closeModal").onclick = () => {
+  document.getElementById("modal").style.display = "none";
+};
 
-// ================= EVENTS =================
-
-document.addEventListener("DOMContentLoaded", () => {
-  const closeBtn = document.getElementById("closeModal");
-  const modal = document.getElementById("modal");
-
-  if (closeBtn) closeBtn.onclick = closeModal;
-
-  if (modal) {
-    modal.addEventListener("click", (e) => {
-      if (e.target.id === "modal") closeModal();
-    });
+document.getElementById("modal").onclick = (e) => {
+  if (e.target.id === "modal") {
+    document.getElementById("modal").style.display = "none";
   }
+};
 
-  loadImages();
-});
+// ================= INIT =================
+
+loadImages();
