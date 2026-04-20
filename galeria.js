@@ -1,6 +1,7 @@
 const API_URL = "https://boda-daniela-jesus.vercel.app/api/images";
 
 let images = [];
+let loadedSet = new Set();
 let currentIndex = 0;
 
 // ================= INIT =================
@@ -16,18 +17,19 @@ async function loadImages() {
     const res = await fetch(API_URL + "?t=" + Date.now());
     const data = await res.json();
 
-    console.log("DATA:", data); // debug
-
-    images = data;
-
     const gallery = document.getElementById("gallery");
     if (!gallery) return;
 
-    gallery.innerHTML = "";
+    images = data;
 
-    images.forEach((item, index) => {
+    data.forEach((item, index) => {
       const url = typeof item === "string" ? item : item?.url;
       if (!url) return;
+
+      // 🔥 ya existe → no lo agregues
+      if (loadedSet.has(url)) return;
+
+      loadedSet.add(url);
 
       let el;
 
@@ -35,9 +37,9 @@ async function loadImages() {
       if (url.match(/\.(mp4|mov|webm)$/i)) {
         el = document.createElement("video");
         el.src = url;
-        el.controls = true;
         el.muted = true;
         el.playsInline = true;
+        el.controls = true;
       } 
       // 🖼 IMAGEN
       else {
@@ -45,19 +47,20 @@ async function loadImages() {
         el.src = url;
       }
 
-      // 🔥 SI FALLA (404), SE ELIMINA
+      // ❌ si falla, lo quitamos
       el.onerror = () => {
-        console.warn("❌ Archivo roto eliminado:", url);
         el.remove();
+        loadedSet.delete(url);
       };
 
       el.onclick = () => openModal(index);
 
-      gallery.appendChild(el);
+      // 🔥 SI ES NUEVA → arriba
+      gallery.prepend(el);
     });
 
   } catch (err) {
-    console.error("❌ Error cargando:", err);
+    console.error("❌ Error:", err);
   }
 }
 
@@ -69,10 +72,10 @@ function openModal(index) {
   const modal = document.getElementById("modal");
   const modalImg = document.getElementById("modalImg");
 
-  if (!modal || !modalImg) return;
-
   const item = images[index];
   const url = typeof item === "string" ? item : item?.url;
+
+  if (!modal || !modalImg) return;
 
   // 🎥 VIDEO
   if (url.match(/\.(mp4|mov|webm)$/i)) {
@@ -83,27 +86,19 @@ function openModal(index) {
     video.style.maxWidth = "100%";
     video.style.maxHeight = "100%";
 
-    video.onerror = () => {
-      console.warn("❌ Video roto en modal:", url);
-      closeModal();
-    };
-
     modalImg.replaceWith(video);
     video.id = "modalImg";
   } 
   // 🖼 IMAGEN
   else {
     modalImg.src = url;
-
-    modalImg.onerror = () => {
-      console.warn("❌ Imagen rota en modal:", url);
-      closeModal();
-    };
   }
 
   modal.classList.add("active");
   document.body.classList.add("modal-open");
 }
+
+// ================= CLOSE =================
 
 function closeModal() {
   const modal = document.getElementById("modal");
@@ -135,4 +130,4 @@ document.addEventListener("DOMContentLoaded", () => {
 // ================= AUTO REFRESH =================
 
 loadImages();
-setInterval(loadImages, 3000);
+setInterval(loadImages, 5000); // 🔥 más relajado (antes 3000)
