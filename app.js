@@ -41,7 +41,6 @@ async function loadImages() {
 
     const latest = data.slice(0, 20);
 
-    // Primera carga
     if (isFirstLoad) {
       gallery.innerHTML = "";
       loadedImages.clear();
@@ -60,7 +59,6 @@ async function loadImages() {
       return;
     }
 
-    // Nuevos elementos
     latest.forEach((item, index) => {
       const url = typeof item === "string" ? item : item?.url;
       if (!url) return;
@@ -77,10 +75,8 @@ async function loadImages() {
           el.classList.remove("new-photo");
         }, 4000);
 
-        // limitar a 20
         while (gallery.children.length > 20) {
           const last = gallery.lastChild;
-          loadedImages.delete(last.src || last.querySelector("source")?.src);
           gallery.removeChild(last);
         }
       }
@@ -91,10 +87,10 @@ async function loadImages() {
   }
 }
 
-// ================= CREAR IMG / VIDEO =================
+// ================= CREAR MEDIA =================
 
 function createMediaElement(url, index) {
-  if (url.includes(".mp4") || url.includes(".mov")) {
+  if (url.match(/\.(mp4|mov|webm)$/i)) {
     const video = document.createElement("video");
     video.src = url;
     video.controls = true;
@@ -135,6 +131,43 @@ function closeModal() {
   document.body.classList.remove("modal-open");
 }
 
+// ================= COMPRESIÓN VIDEO =================
+
+async function compressVideo(file) {
+  try {
+    if (!file.type.startsWith("video")) return file;
+
+    if (file.size < 20 * 1024 * 1024) return file;
+
+    console.log("🎬 Comprimiendo...");
+
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: false });
+
+    await ffmpeg.load();
+
+    ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
+
+    await ffmpeg.run(
+      "-i", "input.mp4",
+      "-vf", "scale=1280:-2",
+      "-b:v", "800k",
+      "-preset", "veryfast",
+      "output.mp4"
+    );
+
+    const data = ffmpeg.FS("readFile", "output.mp4");
+
+    return new File([data.buffer], "video.mp4", {
+      type: "video/mp4"
+    });
+
+  } catch (err) {
+    console.error("❌ Error compresión:", err);
+    return file;
+  }
+}
+
 // ================= UPLOAD =================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -160,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
     uploadBtn.disabled = true;
     uploadBtn.innerText = "Subiendo...";
 
-    // previews
     files.forEach((file, index) => {
       const div = document.createElement("div");
       div.className = "upload-item";
@@ -169,8 +201,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const preview = URL.createObjectURL(file);
 
       div.innerHTML = `
-        ${file.type.startsWith("video") 
-          ? `<video src="${preview}" width="40" height="40"></video>` 
+        ${file.type.startsWith("video")
+          ? `<video src="${preview}" width="40" height="40"></video>`
           : `<img src="${preview}">`}
         <span>📦 En espera...</span>
       `;
@@ -178,10 +210,15 @@ document.addEventListener("DOMContentLoaded", () => {
       list.appendChild(div);
     });
 
-    // subir uno por uno
     for (let i = 0; i < files.length; i++) {
+      let fileToUpload = files[i];
+
+      if (fileToUpload.type.startsWith("video")) {
+        fileToUpload = await compressVideo(fileToUpload);
+      }
+
       text.innerText = `Subiendo ${i + 1} de ${files.length}`;
-      await uploadToCloudinary(files[i], i);
+      await uploadToCloudinary(fileToUpload, i);
     }
 
     text.innerText = "🎉 ¡Listo!";
@@ -234,19 +271,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// ================= UPLOAD REAL (PROGRESO %) =================
+// ================= UPLOAD REAL =================
 
 async function uploadToCloudinary(file, index) {
   const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
   const item = document.getElementById("upload-" + index);
   const span = item.querySelector("span");
-
-  // límite tamaño
-  if (file.size > 100 * 1024 * 1024) {
-    span.innerText = "❌ Muy pesado (máx 100MB)";
-    return;
-  }
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -269,8 +300,6 @@ async function uploadToCloudinary(file, index) {
       try {
         const data = JSON.parse(xhr.responseText);
 
-        if (!data.secure_url) throw new Error("No URL");
-
         await fetch(API_URL, {
           method: "POST",
           headers: {
@@ -283,7 +312,6 @@ async function uploadToCloudinary(file, index) {
         resolve();
 
       } catch (err) {
-        console.error(err);
         span.innerText = "❌ Error";
         reject(err);
       }
