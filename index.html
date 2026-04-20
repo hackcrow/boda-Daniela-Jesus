@@ -4,16 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Daniela & Jesus</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<title>Fotos Boda 📸</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./index.css?v=200">
 
-<link rel="stylesheet" href="./index.css?v=300">
-
-<link rel="icon" href="./favicon.ico?v=3">
 </head>
 
 <body>
@@ -25,46 +20,37 @@
   </div>
 
   <div class="btn-wrapper">
-    <button id="uploadBtn" class="btn btn-main">
-      Subir fotos o videos
-    </button>
+    <button id="uploadBtn" class="btn">Comparte tus fotos</button>
   </div>
 
   <p class="upload-hint">
-    Puedes subir varias fotos o videos al mismo tiempo 🎉
+    Puedes subir fotos y videos 📸🎥
   </p>
 
   <div class="btn-wrapper">
-    <a href="galeria.html?v=20" class="btn btn-secondary">
-      Ir a Galería
-    </a>
+    <a href="galeria.html?v=5" class="btn">Ir a Galería</a>
   </div>
 
 </div>
 
-<input 
-  type="file" 
-  id="fileInput" 
-  multiple 
-  accept="image/*,video/*"
-  hidden
->
+<!-- 🔥 AQUÍ ESTÁ EL FIX -->
+<input type="file" id="fileInput" multiple accept="image/*,video/*" hidden>
 
 <div id="gallery"></div>
 
-<!-- MODAL -->
-<div id="modal">
-  <span id="closeModal">✕</span>
-  <div id="modalContent"></div>
+<!-- 🔥 MODAL -->
+<div id="modal" class="modal">
+  <span id="closeModal">X</span>
+  <img id="modalImg">
 </div>
 
-<!-- STATUS -->
+<!-- 🔥 STATUS (te faltaba esto) -->
 <div id="uploadStatus">
   <p id="uploadText">Subiendo...</p>
   <div id="uploadList"></div>
 </div>
 
-<script src="./app.js?v=300"></script>
+<script src="./app.js?v=200"></script>
 
 </body>
 </html>
